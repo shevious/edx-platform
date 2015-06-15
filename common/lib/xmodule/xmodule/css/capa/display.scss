@@ -148,7 +148,7 @@ div.problem {
       }
     }
 
-    .indicator_container {
+    .indicator-container {
       display: inline-block;
       min-height: 1px;
       width: 25px;
@@ -175,7 +175,7 @@ div.problem {
 // Summary status indicators shown after the input area 
 div.problem { 
 
-  .indicator_container {
+  .indicator-container {
 
     .status {
       width: $baseline;
@@ -251,7 +251,7 @@ div.problem {
     }
   }
 
-  // known classes using this div: .indicator_container, moved to section above
+  // known classes using this div: .indicator-container, moved to section above
   div {
 
     // TO-DO: Styling used by advanced capa problem types. Should be synced up to use .status class
