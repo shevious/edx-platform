@@ -33,5 +33,37 @@ var edx = edx || {};
         $('#refresh-example-certificate-status').on('click', function() {
             window.location.reload();
         });
+
+        var $section = $("section#certificates");
+        $section.on('click', '#btn-start-generating-certificates', function(event) {
+            if ( !confirm( gettext('Start generating certificates for all students in this course?') ) ) {
+                event.preventDefault();
+                return;
+            }
+
+            var $btn_generating_certs = $(this),$certificate_generation_status = $('.certificate-generation-status');
+            var url = $btn_generating_certs.data('endpoint');
+            $.ajax({
+                type: "POST",
+                url: url,
+                success: function (data) {
+                    $btn_generating_certs.attr('disabled','disabled');
+                    $certificate_generation_status.text(data.message);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $certificate_generation_status.text(gettext('Error while generating certificates. Please try again.'));
+                }
+            });
+        });
+
+        var instructor_tasks = new window.InstructorDashboard.util.PendingInstructorTasks($section);
+        $section.prototype.onClickTitle = function() {
+            return instructor_tasks.task_poller.start();
+        };
+
+        $section.prototype.onExit = function() {
+            return this.instructor_tasks.task_poller.stop();
+        };
+
     });
 })( $, gettext );
