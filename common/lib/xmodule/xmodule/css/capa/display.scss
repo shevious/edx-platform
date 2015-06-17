@@ -80,6 +80,7 @@ iframe[seamless]{
 
 div.problem-progress {
   @include padding-left($baseline/4);
+  @extend %t-ultralight;
   display: inline-block;
   color: $gray-d1;
   font-weight: 100;
@@ -348,9 +349,9 @@ div.problem {
       margin-bottom: 0;
 
       &:before {
+        @extend %t-strong;
         display: inline;
         content: "Answer: ";
-        font-weight: bold;
 
       }
       &:empty {
@@ -560,7 +561,8 @@ div.problem {
   }
 
   dl dt {
-    font-weight: bold;
+    @extend %t-strong;
+
   }
 
   dl dd {
@@ -606,8 +608,8 @@ div.problem {
     }
 
     th {
+      @extend %t-strong;
       text-align: left;
-      font-weight: bold;
     }
 
     td {
@@ -871,9 +873,9 @@ div.problem {
   }
   .detailed-solution {
     > p:first-child {
+      @extend %t-strong;
       color: #aaa;
       text-transform: uppercase;
-      font-weight: bold;
       font-style: normal;
       font-size: 0.9em;
     }
@@ -885,9 +887,9 @@ div.problem {
 
   .detailed-targeted-feedback {
     > p:first-child {
+       @extend %t-strong;
       color: $incorrect;
       text-transform: uppercase;
-      font-weight: bold;
       font-style: normal;
       font-size: 0.9em;
     }
@@ -899,9 +901,9 @@ div.problem {
 
   .detailed-targeted-feedback-correct {
     > p:first-child {
+       @extend %t-strong;
       color: $correct;
       text-transform: uppercase;
-      font-weight: bold;
       font-style: normal;
       font-size: 0.9em;
     }
@@ -942,11 +944,11 @@ div.problem {
     border: 1px solid $gray-l3;
 
     h3 {
+      @extend %t-strong;
       padding: 9px;
       border-bottom: 1px solid #e3e3e3;
       background: #eee;
       text-shadow: 0 1px 0 $white;
-      font-weight: bold;
       font-size: em(16);
     }
 
@@ -983,9 +985,9 @@ div.problem {
       margin-bottom: 12px;
 
       h3 {
+        @extend %t-strong;
         color: #aaa;
         text-transform: uppercase;
-        font-weight: bold;
         font-style: normal;
         font-size: 0.9em;
       }
@@ -1042,7 +1044,7 @@ div.problem {
       }
 
       .shortform {
-        font-weight: bold;
+        @extend %t-strong;
       }
 
       .longform {
@@ -1185,9 +1187,9 @@ div.problem {
     border-radius: 1em;
 
     .annotation-header {
+      @extend %t-strong;
       padding: .5em 1em;
       border-bottom: 1px solid $gray-l3;
-      font-weight: bold;
     }
 
     .annotation-body { padding: .5em 1em; }
@@ -1268,10 +1270,10 @@ div.problem {
       pre { background-color: $gray-l3; color: $black; }
 
       &:before {
+        @extend %t-strong;
         display: block;
         content: "debug input value";
         text-transform: uppercase;
-        font-weight: bold;
         font-size: 1.5em;
       }
     }
