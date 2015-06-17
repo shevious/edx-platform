@@ -30,9 +30,9 @@ data: |
 
      <p>Use the following example problem as a model.</p>
 
-     <legend>Which of the following is a vegetable?</legend>
+     <p>Which of the following is a vegetable?</p>
      <multiplechoiceresponse>
-       <choicegroup label="Which of the following is an example of a vegetable?" type="MultipleChoice">
+       <choicegroup type="MultipleChoice">
          <choice correct="false">apple <choicehint>An apple is the fertilized ovary that comes from an apple tree and contains seeds, meaning it is a fruit.</choicehint></choice>
          <choice correct="false">pumpkin <choicehint>A pumpkin is the fertilized ovary of a squash plant and contains seeds, meaning it is a fruit.</choicehint></choice>
          <choice correct="true">potato <choicehint>A potato is an edible part of a plant in tuber form and is a vegetable.</choicehint></choice>

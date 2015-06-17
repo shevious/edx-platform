@@ -33,18 +33,16 @@ data: |
 
     <p>Use the following example problem as a model.</p>
 
-    <fieldset>
-      <legend> A/an ________ is a vegetable.</legend>
-      <br/>
-      <optionresponse>
-        <optioninput label=" ________ is a vegetable.">
-          <option correct="False">apple <optionhint>An apple is the fertilized ovary that comes from an apple tree and contains seeds, meaning it is a fruit.</optionhint></option>
-          <option correct="False">pumpkin <optionhint>A pumpkin is the fertilized ovary of a squash plant and contains seeds, meaning it is a fruit.</optionhint></option>
-          <option correct="True">potato <optionhint>A potato is an edible part of a plant in tuber form and is a vegetable.</optionhint></option>
-          <option correct="False">tomato <optionhint>Many people mistakenly think a tomato is a vegetable. However, because a tomato is the fertilized ovary of a tomato plant and contains seeds, it is a fruit.</optionhint></option>
-        </optioninput>
-      </optionresponse>
-    </fieldset>
+    <p> A/an ________ is a vegetable.</p>
+    <br/>
+    <optionresponse>
+    <optioninput>
+      <option correct="False">apple <optionhint>An apple is the fertilized ovary that comes from an apple tree and contains seeds, meaning it is a fruit.</optionhint></option>
+      <option correct="False">pumpkin <optionhint>A pumpkin is the fertilized ovary of a squash plant and contains seeds, meaning it is a fruit.</optionhint></option>
+      <option correct="True">potato <optionhint>A potato is an edible part of a plant in tuber form and is a vegetable.</optionhint></option>
+      <option correct="False">tomato <optionhint>Many people mistakenly think a tomato is a vegetable. However, because a tomato is the fertilized ovary of a tomato plant and contains seeds, it is a fruit.</optionhint></option>
+    </optioninput>
+    </optionresponse>
 
     <demandhint>
       <hint>A fruit is the fertilized ovary from a flower.</hint>

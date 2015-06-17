@@ -33,20 +33,18 @@ data: |
 
     <p>Use the following example problem as a model.</p>
  
-    <fieldset>
-      <legend>Which U.S. state has the largest land area?</legend>
+    <p>Which U.S. state has the largest land area?</p>
 
-      <stringresponse answer="Alaska" type="ci" >
+    <stringresponse answer="Alaska" type="ci" >
 
-        <correcthint>Alaska is 576,400 square miles, more than double the land area of the second largest state, Texas.</correcthint>
+    <correcthint>Alaska is 576,400 square miles, more than double the land area of the second largest state, Texas.</correcthint>
 
-        <stringequalhint answer="Texas">While many people think Texas is the largest state, it is actually the second largest, with 261,797 square miles.</stringequalhint>
-        
-        <stringequalhint answer="California">California is the third largest state, with 155,959 square miles.</stringequalhint>
-        
-        <textline label="Which U.S. state has the largest land area?" size="20"/>
-      </stringresponse>
-    </fieldset>
+    <stringequalhint answer="Texas">While many people think Texas is the largest state, it is actually the second largest, with 261,797 square miles.</stringequalhint>
+
+    <stringequalhint answer="California">California is the third largest state, with 155,959 square miles.</stringequalhint>
+
+    <textline label="Which U.S. state has the largest land area?" size="20"/>
+    </stringresponse>
 
     <demandhint>
       <hint>Consider the square miles, not population.</hint>
