@@ -8,22 +8,18 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Removing index on 'CreditProvider', fields ['provider_id']
-        db.delete_index('credit_creditprovider', ['provider_id'])
-
         # Deleting field 'CreditEligibility.provider'
         db.delete_column('credit_crediteligibility', 'provider_id')
 
 
     def backwards(self, orm):
-        # Adding index on 'CreditProvider', fields ['provider_id']
-        db.create_index('credit_creditprovider', ['provider_id'])
-
-        # Adding field 'CreditEligibility.provider'
+        # User chose to not deal with backwards NULL issues for 'CreditEligibility.provider'
+        raise RuntimeError("Cannot reverse this migration. 'CreditEligibility.provider' and its values cannot be restored.")
+        
+        # The following code is provided here to aid in writing a correct migration        # Adding field 'CreditEligibility.provider'
         db.add_column('credit_crediteligibility', 'provider',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default='', related_name='eligibilities', to=orm['credit.CreditProvider']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(related_name='eligibilities', to=orm['credit.CreditProvider']),
                       keep_default=False)
-
 
     models = {
         'auth.group': {
