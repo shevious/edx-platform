@@ -55,6 +55,7 @@ class BlockSerializer(serializers.Serializer):
     """ Serializer for course structure block. """
     id = serializers.CharField(source='usage_key')
     type = serializers.CharField(source='block_type')
+    parent = serializers.CharField(source='parent')
     display_name = serializers.CharField()
     graded = serializers.BooleanField(default=False)
     format = serializers.CharField()

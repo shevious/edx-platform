@@ -6,10 +6,12 @@ of the tricky interactions between DRF and the code.
 Most of that information is available by accessing the course objects directly.
 """
 
+from collections import OrderedDict
 import serializers
 from errors import CourseNotFoundError, CourseStructureNotAvailableError
 from openedx.core.djangoapps.content.course_structures import models, tasks
 from courseware import courses
+from util.cache import cache
 
 
 def _retrieve_course(course_key):
@@ -29,7 +31,7 @@ def _retrieve_course(course_key):
         raise CourseNotFoundError
 
 
-def course_structure(course_key):
+def course_structure(course_key, block_types=None):
     """
     Retrieves the entire course structure, including information about all the blocks used in the course.
 
@@ -61,14 +63,39 @@ def course_structure(course_key):
     Raises:
         CourseStructureNotAvailableError, CourseNotFoundError
     """
-    course = _retrieve_course(course_key)
-    try:
-        requested_course_structure = models.CourseStructure.objects.get(course_id=course.id)
-        return serializers.CourseStructureSerializer(requested_course_structure.structure).data
-    except models.CourseStructure.DoesNotExist:
-        # If we don't have data stored, generate it and return an error.
-        tasks.update_course_structure.delay(unicode(course_key))
-        raise CourseStructureNotAvailableError
+    modified_timestamp = models.CourseStructure.objects.filter(course_id=course_key).values('modified')
+
+    if modified_timestamp.exists():
+        cache_key = 'openedx.content.course_structures.api.v0.api.course_structure.{}.{}.{}'.format(
+            course_key, modified_timestamp[0]['modified'], '_'.join(block_types or [])
+        )
+        data = cache.get(cache_key)  # pylint: disable=maybe-no-member
+        if data:
+            return data
+
+        course = _retrieve_course(course_key)
+        try:
+            course_structure = models.CourseStructure.objects.get(course_id=course.id)
+            structure = course_structure.structure
+
+            if block_types is not None:
+                blocks = course_structure.ordered_blocks
+                required_blocks = OrderedDict()
+                for usage_id, block_data in blocks.iteritems():
+                    if block_data['block_type'] in block_types:
+                        required_blocks[usage_id] = block_data
+
+                structure['blocks'] = required_blocks
+
+            data = serializers.CourseStructureSerializer(structure).data
+            cache.set(cache_key, data)  # pylint: disable=maybe-no-member
+            return data
+        except models.CourseStructure.DoesNotExist:
+            pass
+
+    # If we don't have data stored, generate it and return an error.
+    tasks.update_course_structure.delay(unicode(course_key))
+    raise CourseStructureNotAvailableError
 
 
 def course_grading_policy(course_key):

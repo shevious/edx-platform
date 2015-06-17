@@ -14,7 +14,6 @@ from django.views.decorators.http import require_http_methods, require_GET
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, Http404
-from util.cache import cache
 from util.json_request import JsonResponse, JsonResponseBadRequest
 from util.date_utils import get_default_time_display
 from edxmako.shortcuts import render_to_response
@@ -28,6 +27,7 @@ from openedx.core.lib.course_tabs import CourseTabPluginManager
 from openedx.core.djangoapps.content.course_structures.models import CourseStructure
 from openedx.core.djangoapps.credit.api import is_credit_course, get_credit_requirements
 from openedx.core.djangoapps.credit.tasks import update_credit_course_requirements
+from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
 from xmodule.modulestore import EdxJSONEncoder
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateCourseError
 from opaque_keys import InvalidKeyError
@@ -99,6 +99,8 @@ __all__ = ['course_info_handler', 'course_handler', 'course_listing',
            'course_notifications_handler',
            'textbooks_list_handler', 'textbooks_detail_handler',
            'group_configurations_list_handler', 'group_configurations_detail_handler']
+
+DEPRECATED_BLOCK_TYPES = ['peergrading', 'combinedopenended']
 
 
 class AccessListFallback(Exception):
@@ -472,7 +474,7 @@ def _get_rerun_link_for_item(course_key):
     return reverse_course_url('course_rerun_handler', course_key)
 
 
-def _ora1_deprecation_info(course_id, advanced_modules):
+def _deprecation_info(course_module, deprecated_block_types):
     """
     Returns information about ORA1
         * Modules presence in the Advanced Module List.
@@ -490,34 +492,30 @@ def _ora1_deprecation_info(course_id, advanced_modules):
         advance_settings_url (str): URL to advance settings page
     """
     data = {
-        'ora1_enabled': 'peergrading' in advanced_modules or 'combinedopenended' in advanced_modules,
-        'ora1_components': [],
-        'advance_settings_url': reverse_course_url('advanced_settings_handler', course_id)
+        'feature_enabled': any(
+            component in course_module.advanced_modules for component in deprecated_block_types
+        ),
+        'feature_components': [],
+        'advance_settings_url': reverse_course_url('advanced_settings_handler', course_module.id)
     }
 
-    cache_key = 'ora1.components.{course}'.format(course=course_id)
+    try:
+        structure_data = api.course_structure(course_module.id, block_types=deprecated_block_types)
+    except errors.CourseStructureNotAvailableError:
+        return data
 
-    ora1_components = cache.get(cache_key)  # pylint: disable=maybe-no-member
-    if ora1_components is None:
+    store = modulestore()
+    components = []
+    for __, block in structure_data['blocks'].items():
         try:
-            course_structure = CourseStructure.objects.get(course_id=course_id)
-            ordered_blocks = course_structure.ordered_blocks
-        except CourseStructure.DoesNotExist:
-            return data
+            item = store.get_item(UsageKey.from_string(block['parent']))
+        except ItemNotFoundError:
+            pass
+        else:
+            if store.has_published_version(item):
+                components.append([reverse_usage_url('container_handler', block['parent']), block['display_name']])
 
-        store = modulestore()
-        ora1_components = []
-        for __, block in ordered_blocks.items():
-            if block['block_type'] in ['peergrading', 'combinedopenended']:
-                item = store.get_item(UsageKey.from_string(block['parent']))
-                if not getattr(item, 'is_draft', False):
-                    ora1_components.append(
-                        [reverse_usage_url('container_handler', block['parent']), block['display_name']]
-                    )
-
-        cache.set(cache_key, ora1_components, 60 * 5)  # pylint: disable=maybe-no-member
-
-    data['ora1_components'] = ora1_components
+    data['feature_components'] = components
 
     return data
 
@@ -549,6 +547,8 @@ def course_index(request, course_key):
         except (ItemNotFoundError, CourseActionStateItemNotFoundError):
             current_action = None
 
+        ora1_deprecation_info = _deprecation_info(course_module, DEPRECATED_BLOCK_TYPES)
+
         return render_to_response('course_outline.html', {
             'context_course': course_module,
             'lms_link': lms_link,
@@ -562,7 +562,7 @@ def course_index(request, course_key):
             'course_release_date': course_release_date,
             'settings_url': settings_url,
             'reindex_link': reindex_link,
-            'ora1_deprecation_info': _ora1_deprecation_info(course_key, course_module.advanced_modules),
+            'ora1_deprecation_info': ora1_deprecation_info,
             'notification_dismiss_url': reverse_course_url(
                 'course_notifications_handler',
                 current_action.course_key,
