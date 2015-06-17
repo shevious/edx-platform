@@ -720,7 +720,7 @@ def get_credit_eligibility(username):
     request_dict = {}
     # Change the list to dict for iteration
     for request in user_credit_requests:
-        request_dict[unicode(request["course_key"])]=request
+        request_dict[unicode(request["course_key"])] = request
     user_eligibilities = {}
     for eligibility in eligibilities:
         course_key = eligibility.course.course_key
@@ -741,7 +741,7 @@ def get_credit_eligibility(username):
     return user_eligibilities
 
 
-def get_purchased_credit_courses(username):
+def get_purchased_credit_courses(username):  # pylint: disable=unused-argument
     """
     Returns the purchased credit courses.
 

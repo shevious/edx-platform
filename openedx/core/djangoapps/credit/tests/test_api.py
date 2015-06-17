@@ -545,14 +545,17 @@ class CreditProviderIntegrationApiTests(CreditApiTestBase):
 
 
 class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
+    """
+    Test dashboard messages of credit course.
+    """
 
     FINAL_GRADE = 0.8
 
     def setUp(self):
         super(CreditMessagesTests, self).setUp()
         self.student = UserFactory()
-        self.student.set_password('test')
-        self.student.save()
+        self.student.set_password('test')  # pylint: disable=no-member
+        self.student.save()  # pylint: disable=no-member
 
         self.client.login(username=self.student.username, password='test')
         # New Course
@@ -560,6 +563,10 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
         self.enrollment = CourseEnrollment.enroll(self.student, self.course.id)
 
     def _set_creditcourse(self):
+        """
+        Mark the course to credit
+
+        """
         self.first_provider = CreditProvider.objects.create(
             provider_id="ASU",
             display_name="Arizona State University",
@@ -578,6 +585,9 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
         self.credit_course.providers.add(self.second_provider)
 
     def _set_user_eligible(self, credit_course, username):
+        """
+        Mark the user eligible for credit for the given credit course.
+        """
         self.eligibility = CreditEligibility.objects.create(username=username, course=credit_course)
 
     def test_user_request_status(self):
