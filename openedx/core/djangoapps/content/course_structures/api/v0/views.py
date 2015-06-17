@@ -15,8 +15,8 @@ from rest_framework.reverse import reverse
 from xmodule.modulestore.django import modulestore
 from opaque_keys.edx.keys import CourseKey
 
-from course_structure_api.v0 import api, serializers
-from course_structure_api.v0.errors import CourseNotFoundError, CourseStructureNotAvailableError
+import api, serializers
+from errors import CourseNotFoundError, CourseStructureNotAvailableError
 from courseware import courses
 from courseware.access import has_access
 from courseware.model_data import FieldDataCache

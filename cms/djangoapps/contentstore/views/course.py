@@ -498,7 +498,7 @@ def _ora1_deprecation_info(course_id, advanced_modules):
     cache_key = 'ora1.components.{course}'.format(course=course_id)
 
     ora1_components = cache.get(cache_key)  # pylint: disable=maybe-no-member
-    if not ora1_components:
+    if ora1_components is None:
         try:
             course_structure = CourseStructure.objects.get(course_id=course_id)
             ordered_blocks = course_structure.ordered_blocks

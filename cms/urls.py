@@ -50,6 +50,11 @@ urlpatterns = patterns(
     url(r'^heartbeat$', include('heartbeat.urls')),
 
     url(r'^user_api/', include('openedx.core.djangoapps.user_api.legacy_urls')),
+
+    # Course content API
+    url(r'^api/course_structure/',
+        include('openedx.core.djangoapps.content.course_structures.api.urls', namespace='course_structure_api')
+    ),
 )
 
 # User creation and updating views

@@ -9,7 +9,6 @@ from mock import patch, Mock
 from itertools import product
 
 from django.core.urlresolvers import reverse
-from django.test.utils import override_settings
 
 from capa.tests.response_xml_factory import MultipleChoiceResponseXMLFactory
 from oauth2_provider.tests.factories import AccessTokenFactory, ClientFactory

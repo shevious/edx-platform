@@ -7,5 +7,5 @@ from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns(
     '',
-    url(r'^v0/', include('course_structure_api.v0.urls', namespace='v0'))
+    url(r'^v0/', include('openedx.core.djangoapps.content.course_structures.api.v0.urls', namespace='v0'))
 )

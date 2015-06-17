@@ -6,8 +6,8 @@ of the tricky interactions between DRF and the code.
 Most of that information is available by accessing the course objects directly.
 """
 
-from course_structure_api.v0 import serializers
-from course_structure_api.v0.errors import CourseNotFoundError, CourseStructureNotAvailableError
+import serializers
+from errors import CourseNotFoundError, CourseStructureNotAvailableError
 from openedx.core.djangoapps.content.course_structures import models, tasks
 from courseware import courses
 
