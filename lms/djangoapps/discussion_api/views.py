@@ -141,6 +141,11 @@ class ThreadViewSet(_ViewMixin, DeveloperErrorViewMixin, ViewSet):
             (including the bodies of comments in the thread) matches the search
             string will be returned.
 
+        * view: One of "following", "unread", or "unanswered", to retrieve
+            threads the requesting user is following, threads the requesting
+            user has not read, or question threads with no marked answer,
+            respectively.
+
     **POST Parameters**:
 
         * course_id (required): The course to create the thread in
@@ -226,6 +231,7 @@ class ThreadViewSet(_ViewMixin, DeveloperErrorViewMixin, ViewSet):
                 form.cleaned_data["page_size"],
                 form.cleaned_data["topic_id"],
                 form.cleaned_data["text_search"],
+                form.cleaned_data["view"],
             )
         )
 
