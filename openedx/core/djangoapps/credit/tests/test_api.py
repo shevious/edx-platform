@@ -43,7 +43,9 @@ TEST_CREDIT_PROVIDER_SECRET_KEY = "931433d583c84ca7ba41784bad3232e6"
 
 
 @override_settings(CREDIT_PROVIDER_SECRET_KEYS={
-    "hogwarts": TEST_CREDIT_PROVIDER_SECRET_KEY
+    "hogwarts": TEST_CREDIT_PROVIDER_SECRET_KEY,
+    "ASU": TEST_CREDIT_PROVIDER_SECRET_KEY,
+    "MIT": TEST_CREDIT_PROVIDER_SECRET_KEY
 })
 class CreditApiTestBase(TestCase):
     """
@@ -215,7 +217,7 @@ class CreditRequirementApiTests(CreditApiTestBase):
     def test_is_user_eligible_for_credit(self):
         credit_course = self.add_credit_course()
         CreditEligibility.objects.create(
-            course=credit_course, username="staff", provider=CreditProvider.objects.get(provider_id=self.PROVIDER_ID)
+            course=credit_course, username="staff"
         )
         is_eligible = api.is_user_eligible_for_credit('staff', credit_course.course_key)
         self.assertTrue(is_eligible)
@@ -559,10 +561,16 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
 
     def _set_creditcourse(self):
         self.first_provider = CreditProvider.objects.create(
-            provider_id="ASU", display_name="Arizona State University", provider_url="google.com"
+            provider_id="ASU",
+            display_name="Arizona State University",
+            provider_url="google.com",
+            enable_integration=True
         )
         self.second_provider = CreditProvider.objects.create(
-            provider_id="MIT", display_name="Massachusetts Institute of Technology", provider_url="MIT.com"
+            provider_id="MIT",
+            display_name="Massachusetts Institute of Technology",
+            provider_url="MIT.com",
+            enable_integration=True
         )
 
         self.credit_course = CreditCourse.objects.create(course_key=self.course.id, enabled=True)
@@ -571,6 +579,10 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
 
     def _set_user_eligible(self, credit_course, username):
         self.eligibility = CreditEligibility.objects.create(username=username, course=credit_course)
+
+    def test_user_request_status(self):
+        request_status = api.get_credit_request_status(self.student.username, self.course.id)
+        self.assertEqual(len(request_status), 0)
 
     def test_credit_messages(self):
         self._set_creditcourse()

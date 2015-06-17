@@ -689,26 +689,6 @@ def _get_duration_and_providers(credit_course):
 
     return seconds_good_for_display, providers_list
 
-def _get_credit_request_status(username, course_key):
-    """
-    Returns the credit request status.
-
-    Args:
-        username(str): The username of a user
-        course_key(CourseKey): The CourseKey
-
-    Returns:
-        The tuple of status and provider.
-
-    """
-    status = None
-    provider = None
-    credit_request = get_credit_request_status(username, course_key)
-    if credit_request:
-        status = credit_request["status"]
-        provider = credit_request["provider"]
-    return status, provider
-
 
 def get_credit_eligibility(username):
     """
@@ -740,7 +720,7 @@ def get_credit_eligibility(username):
     request_dict = {}
     # Change the list to dict for iteration
     for request in user_credit_requests:
-        request_dict[request["course_key"]]=request
+        request_dict[unicode(request["course_key"])]=request
     user_eligibilities = {}
     for eligibility in eligibilities:
         course_key = eligibility.course.course_key
