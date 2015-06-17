@@ -149,21 +149,50 @@
     @extend %t-weight4;
   }
 
+  .search-tools {
+    @extend %t-copy-sub1;
+    margin: ($baseline/10) $baseline;
+    color: $gray-l1;
+  }
+
   .card {
     @extend .clearfix;
     display: inline-block;
     width: 30%;
-    margin: ($baseline/2) ($baseline/4);
-    border: 1px solid $gray-l3;
+    margin: ($baseline) 1.2%;
+    border: 1px solid $gray-l4;
     border-radius: 3px;
+    background-color: $gray-l5;
+    color: $black;
+
+    &:hover,
+    &:active,
+    &:focus {
+
+      .card-core-wrapper {
+        background-color: $white;
+      }
+
+      .card-meta-wrapper {
+        background-color: $gray-l5;
+      }
+
+      .action-view {
+        -webkit-animation: throb 2s infinite;
+                animation: throb 2s infinite;
+      }
+    }
 
     .card-core-wrapper {
       @extend .clearfix;
-      padding: ($baseline*.75);
+      transition: all .25s ease-in-out;
+      padding: ($baseline);
     }
 
     .card-title {
       @extend %t-title5;
+      @extend %t-strong;
+      margin-bottom: .5em;
     }
 
     .card-description {
@@ -174,7 +203,7 @@
     .card-actions {
 
       .action-view {
-        @extend %btn-secondary-blue-outline;
+        @extend %btn-pl-primary-base;
         float: right;
       }
     }
@@ -182,10 +211,11 @@
     .card-meta-wrapper {
       @extend .clearfix;
       @extend %t-copy-sub1;
+      transition: all .25s ease-in-out;
       border-top: 1px solid $gray-l3;
       padding: ($baseline/2) ($baseline*.75);
-      background-color: $gray-l5;
-      color: $gray;
+      background-color: $gray-l4;
+      color: $black;
 
       p {
         color: $gray; // override
@@ -193,6 +223,7 @@
     }
 
     .meta-detail {
+      @extend %t-strong;
       display: inline-block;
       margin-top: ($baseline/4);
       margin-right: ($baseline*.75);
@@ -201,7 +232,7 @@
     &.square-card {
 
       .card-description {
-        height: ($baseline*5);
+        height: ($baseline*4);
         overflow: hidden;
       }
 
@@ -246,11 +277,38 @@
         width: 84%;
       }
 
+      .card-title .team-link {
+        @extend %t-strong;
+        color: $link-color;
+      }
+
       .card-actions {
         display: inline-block;
         vertical-align: middle;
         width: 15%;
       }
+    }
+
+    .card-meta-wrapper {
+
+      .member-thumbs {
+        img {
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+
+    .meta-detail {
+      @extend %t-regular;
+
+      .icon {
+        margin-right: ($baseline/4);
+      }
+    }
+
+    .team-activity {
+      float: right;
     }
 
   }
