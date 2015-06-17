@@ -8,18 +8,12 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting field 'CreditEligibility.provider'
-        db.delete_column('credit_crediteligibility', 'provider_id')
-
+        # Changing field 'CreditEligibility.provider'
+        db.alter_column('credit_crediteligibility', 'provider_id', self.gf('django.db.models.fields.related.ForeignKey')(null=True, to=orm['credit.CreditProvider']))
 
     def backwards(self, orm):
-        # User chose to not deal with backwards NULL issues for 'CreditEligibility.provider'
-        raise RuntimeError("Cannot reverse this migration. 'CreditEligibility.provider' and its values cannot be restored.")
-        
-        # The following code is provided here to aid in writing a correct migration        # Adding field 'CreditEligibility.provider'
-        db.add_column('credit_crediteligibility', 'provider',
-                      self.gf('django.db.models.fields.related.ForeignKey')(related_name='eligibilities', to=orm['credit.CreditProvider']),
-                      keep_default=False)
+        # Changing field 'CreditEligibility.provider'
+        db.alter_column('credit_crediteligibility', 'provider_id', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['credit.CreditProvider']))
 
     models = {
         'auth.group': {
@@ -71,6 +65,7 @@ class Migration(SchemaMigration):
             'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
+            'provider': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'eligibilities'", 'null': 'True', 'to': "orm['credit.CreditProvider']"}),
             'username': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'})
         },
         'credit.creditprovider': {
