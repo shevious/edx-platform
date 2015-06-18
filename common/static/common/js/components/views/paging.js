@@ -18,6 +18,8 @@
                     collection.bind('add', _.bind(this.onPageRefresh, this));
                     collection.bind('remove', _.bind(this.onPageRefresh, this));
                     collection.bind('reset', _.bind(this.onPageRefresh, this));
+                    collection.bind('error', _.bind(this.onError, this));
+                    collection.bind('page_changed', function () { window.scrollTo(0, 0); });
                 },
 
                 onPageRefresh: function() {
