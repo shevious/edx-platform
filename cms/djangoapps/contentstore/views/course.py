@@ -24,7 +24,6 @@ from xmodule.modulestore.django import modulestore
 from xmodule.contentstore.content import StaticContent
 from xmodule.tabs import CourseTab
 from openedx.core.lib.course_tabs import CourseTabPluginManager
-from openedx.core.djangoapps.content.course_structures.models import CourseStructure
 from openedx.core.djangoapps.credit.api import is_credit_course, get_credit_requirements
 from openedx.core.djangoapps.credit.tasks import update_credit_course_requirements
 from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
@@ -476,26 +475,24 @@ def _get_rerun_link_for_item(course_key):
 
 def _deprecation_info(course_module, deprecated_block_types):
     """
-    Returns information about ORA1
-        * Modules presence in the Advanced Module List.
-        * Components presence in the course outline.
+    Returns deprecation information about `deprecated_block_types`
 
     Arguments:
-        course_id (CourseKey): course id
+        course_module (CourseKey): course module
         advanced_modules (list): advance module list
 
     Returns:
         Dict with following keys:
 
-        ora1_enabled (bool): True if "peergrading" and/or "combinedopenended" are in the Advanced Module List else False
-        ora1_components (list): List of ora1 components and their parent's url
+        feature_enabled (bool): True if any or all `deprecated_block_types` present in Advanced Module List else False
+        feature_components (list): List of `deprecated_block_types` component names and their parent's url
         advance_settings_url (str): URL to advance settings page
     """
     data = {
-        'feature_enabled': any(
+        'block_types_enabled': any(
             component in course_module.advanced_modules for component in deprecated_block_types
         ),
-        'feature_components': [],
+        'blocks': [],
         'advance_settings_url': reverse_course_url('advanced_settings_handler', course_module.id)
     }
 
@@ -505,18 +502,17 @@ def _deprecation_info(course_module, deprecated_block_types):
         return data
 
     store = modulestore()
-    components = []
-    for __, block in structure_data['blocks'].items():
+    blocks = []
+    for block in structure_data['blocks'].values():
         try:
             item = store.get_item(UsageKey.from_string(block['parent']))
         except ItemNotFoundError:
             pass
         else:
             if store.has_published_version(item):
-                components.append([reverse_usage_url('container_handler', block['parent']), block['display_name']])
+                blocks.append([reverse_usage_url('container_handler', block['parent']), block['display_name']])
 
-    data['feature_components'] = components
-
+    data['blocks'] = blocks
     return data
 
 
@@ -547,7 +543,7 @@ def course_index(request, course_key):
         except (ItemNotFoundError, CourseActionStateItemNotFoundError):
             current_action = None
 
-        ora1_deprecation_info = _deprecation_info(course_module, DEPRECATED_BLOCK_TYPES)
+        deprecation_info = _deprecation_info(course_module, DEPRECATED_BLOCK_TYPES)
 
         return render_to_response('course_outline.html', {
             'context_course': course_module,
@@ -562,7 +558,7 @@ def course_index(request, course_key):
             'course_release_date': course_release_date,
             'settings_url': settings_url,
             'reindex_link': reindex_link,
-            'ora1_deprecation_info': ora1_deprecation_info,
+            'deprecation_info': deprecation_info,
             'notification_dismiss_url': reverse_course_url(
                 'course_notifications_handler',
                 current_action.course_key,

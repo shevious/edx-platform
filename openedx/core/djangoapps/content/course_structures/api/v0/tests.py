@@ -338,6 +338,7 @@ class CourseStructureTests(CourseDetailTestMixin, CourseViewTestsMixin, ModuleSt
                 u'display_name': xblock.display_name,
                 u'format': xblock.format,
                 u'graded': xblock.graded,
+                u'parent': None,
                 u'children': [unicode(child.location) for child in children]
             }
 

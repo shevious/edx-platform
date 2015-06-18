@@ -53,8 +53,7 @@ urlpatterns = patterns(
 
     # Course content API
     url(r'^api/course_structure/',
-        include('openedx.core.djangoapps.content.course_structures.api.urls', namespace='course_structure_api')
-    ),
+        include('openedx.core.djangoapps.content.course_structures.api.urls', namespace='course_structure_api')),
 )
 
 # User creation and updating views

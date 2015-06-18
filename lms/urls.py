@@ -80,8 +80,7 @@ urlpatterns = (
 
     # Course content API
     url(r'^api/course_structure/',
-        include('openedx.core.djangoapps.content.course_structures.api.urls', namespace='course_structure_api')
-    ),
+        include('openedx.core.djangoapps.content.course_structures.api.urls', namespace='course_structure_api')),
 
     # User API endpoints
     url(r'^api/user/', include('openedx.core.djangoapps.user_api.urls')),

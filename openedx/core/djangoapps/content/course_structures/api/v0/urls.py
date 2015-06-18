@@ -4,7 +4,7 @@ Courses Structure API v0 URI specification
 from django.conf import settings
 from django.conf.urls import patterns, url
 
-import views
+from openedx.core.djangoapps.content.course_structures.api.v0 import views
 
 
 COURSE_ID_PATTERN = settings.COURSE_ID_PATTERN

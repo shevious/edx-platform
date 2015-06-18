@@ -16,7 +16,7 @@ from contentstore.courseware_index import CoursewareSearchIndexer, SearchIndexin
 from contentstore.tests.utils import CourseTestCase
 from contentstore.utils import reverse_course_url, reverse_library_url, add_instructor, reverse_usage_url
 from contentstore.views.course import (
-    course_outline_initial_state, reindex_course_and_check_access, _ora1_deprecation_info
+    course_outline_initial_state, reindex_course_and_check_access, _deprecation_info
 )
 from contentstore.views.item import create_xblock_info, VisibilityState
 from course_action_state.managers import CourseRerunUIStateManager
@@ -344,41 +344,42 @@ class TestCourseOutline(CourseTestCase):
         _assert_settings_link_present(response)
 
     @ddt.data(
-        {'ora1_advance_modules': False, 'ora1_components': False, 'draft': False},
-        {'ora1_advance_modules': False, 'ora1_components': True, 'draft': False},
-        {'ora1_advance_modules': True, 'ora1_components': False, 'draft': False},
-        {'ora1_advance_modules': True, 'ora1_components': True, 'draft': False},
-        {'ora1_advance_modules': True, 'ora1_components': True, 'draft': True},
+        {'block_types_enabled': False, 'blocks': False, 'draft': False},
+        {'block_types_enabled': False, 'blocks': True, 'draft': False},
+        {'block_types_enabled': True, 'blocks': False, 'draft': False},
+        {'block_types_enabled': True, 'blocks': True, 'draft': False},
+        {'block_types_enabled': True, 'blocks': True, 'draft': True},
     )
     @ddt.unpack
-    def test_verify_ora1_deprecated_warning_message(self, ora1_advance_modules, ora1_components, draft):
+    def test_verify_deprecated_warning_message(self, block_types_enabled, blocks, draft):
         """
-        Verify ora1 deprecated warning info
+        Verify deprecated warning info
         """
-        expected_ora1_components = []
-        if ora1_components:
+        deprecated_block_types = ['peergrading', 'combinedopenended']
+        expected_blocks = []
+        if blocks:
             ItemFactory.create(parent_location=self.vertical.location, category="peergrading", display_name="Peer")
             ItemFactory.create(parent_location=self.vertical.location, category="combinedopenended", display_name="COE")
 
             if draft:
-                self.store.convert_to_draft(self.vertical.location, self.user.id)
+                self.store.unpublish(self.vertical.location, self.user.id)
             else:
-                expected_ora1_components.append(
+                expected_blocks.append(
                     [reverse_usage_url('container_handler', self.vertical.location), 'Peer']
                 )
-                expected_ora1_components.append(
+                expected_blocks.append(
                     [reverse_usage_url('container_handler', self.vertical.location), 'COE']
                 )
 
         course_module = modulestore().get_item(self.course.location)
 
-        if ora1_advance_modules:
+        if block_types_enabled:
             course_module.advanced_modules.extend(['peergrading', 'combinedopenended'])
 
-        info = _ora1_deprecation_info(course_module.id, course_module.advanced_modules)
+        info = _deprecation_info(course_module, deprecated_block_types)
 
-        self.assertEqual(info['ora1_enabled'], ora1_advance_modules)
-        self.assertEqual(info['ora1_components'], expected_ora1_components)
+        self.assertEqual(info['block_types_enabled'], block_types_enabled)
+        self.assertItemsEqual(info['blocks'], expected_blocks)
         self.assertEqual(
             info['advance_settings_url'], reverse_course_url('advanced_settings_handler', course_module.id)
         )
