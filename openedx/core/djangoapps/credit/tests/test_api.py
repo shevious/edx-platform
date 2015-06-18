@@ -569,20 +569,21 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
         Mark the course to credit
 
         """
+        # pylint: disable=attribute-defined-outside-init
         self.first_provider = CreditProvider.objects.create(
             provider_id="ASU",
             display_name="Arizona State University",
             provider_url="google.com",
             enable_integration=True
-        )
+        )  # pylint: disable=attribute-defined-outside-init
         self.second_provider = CreditProvider.objects.create(
             provider_id="MIT",
             display_name="Massachusetts Institute of Technology",
             provider_url="MIT.com",
             enable_integration=True
-        )
+        )  # pylint: disable=attribute-defined-outside-init
 
-        self.credit_course = CreditCourse.objects.create(course_key=self.course.id, enabled=True)
+        self.credit_course = CreditCourse.objects.create(course_key=self.course.id, enabled=True)  # pylint: disable=attribute-defined-outside-init
         self.credit_course.providers.add(self.first_provider)
         self.credit_course.providers.add(self.second_provider)
 
@@ -590,7 +591,7 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
         """
         Mark the user eligible for credit for the given credit course.
         """
-        self.eligibility = CreditEligibility.objects.create(username=username, course=credit_course)
+        self.eligibility = CreditEligibility.objects.create(username=username, course=credit_course)  # pylint: disable=attribute-defined-outside-init
 
     def test_user_request_status(self):
         request_status = api.get_credit_request_status(self.student.username, self.course.id)
@@ -616,8 +617,9 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
         self._set_user_eligible(self.credit_course, self.student.username)
         response = self.client.get(reverse("dashboard"))
         self.assertContains(
-            response, "<b>Congratulations</b> {}, You have meet requirements for credit.".format(
-                self.student.get_full_name()
+            response,
+            "<b>Congratulations</b> {}, You have meet requirements for credit.".format(
+                self.student.get_full_name()  # pylint: disable=no-member
             )
         )
 
@@ -625,7 +627,9 @@ class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
 
         response = self.client.get(reverse("dashboard"))
         self.assertContains(
-            response, 'Thank you, your payment is complete, your credit is processing. Please see {provider_link} for more information.'.format(
+            response,
+            'Thank you, your payment is complete, your credit is processing. '
+            'Please see {provider_link} for more information.'.format(
                 provider_link='<a href="#" target="_blank">{provider_name}</a>'.format(
                     provider_name=self.first_provider.display_name
                 )

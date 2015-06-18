@@ -215,7 +215,7 @@ def create_credit_request(course_key, provider_id, username):
         )
         credit_course = user_eligibility.course
         credit_provider = credit_course.providers.get(provider_id=provider_id)
-    except CreditEligibility.DoesNotExist, CreditProvider.DoesNotExist:
+    except (CreditEligibility.DoesNotExist, CreditProvider.DoesNotExist):
         log.warning(u'User tried to initiate a request for credit, but the user is not eligible for credit')
         raise UserIsNotEligible
 

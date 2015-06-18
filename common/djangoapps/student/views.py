@@ -696,7 +696,7 @@ def _create_recent_enrollment_message(course_enrollment_pairs, course_modes):
         )
 
 
-def _create_credit_availability_message(enrolled_courses_dict, user):
+def _create_credit_availability_message(enrolled_courses_dict, user):  # pylint: disable=invalid-name
     """Builds a dict of credit availability for courses.
 
     Construct a for courses user has completed and has not purchased credit
