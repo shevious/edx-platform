@@ -1,7 +1,7 @@
 """
 Tests for the API functions in the credit app.
 """
-
+import unittest
 import datetime
 import ddt
 import pytz
@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.db import connection, transaction
 from django.core.urlresolvers import reverse
+from django.conf import settings
 
 from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.credit import api
@@ -544,6 +545,7 @@ class CreditProviderIntegrationApiTests(CreditApiTestBase):
         self.assertEqual(statuses[0]["status"], expected_status)
 
 
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
 class CreditMessagesTests(ModuleStoreTestCase, CreditApiTestBase):
     """
     Test dashboard messages of credit course.
