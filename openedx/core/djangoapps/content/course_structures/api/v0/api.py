@@ -7,11 +7,8 @@ Most of that information is available by accessing the course objects directly.
 """
 
 from collections import OrderedDict
-from openedx.core.djangoapps.content.course_structures.api.v0 import serializers
-from openedx.core.djangoapps.content.course_structures.api.v0.errors import (
-    CourseNotFoundError,
-    CourseStructureNotAvailableError
-)
+from .serializers import CourseStructureSerializer, GradingPolicySerializer
+from .errors import CourseNotFoundError, CourseStructureNotAvailableError
 from openedx.core.djangoapps.content.course_structures import models, tasks
 from courseware import courses
 from util.cache import cache
@@ -97,7 +94,7 @@ def course_structure(course_key, block_types=None):
 
                 structure['blocks'] = required_blocks
 
-            data = serializers.CourseStructureSerializer(structure).data
+            data = CourseStructureSerializer(structure).data
             cache.set(cache_key, data, None)  # pylint: disable=maybe-no-member
             return data
 
@@ -126,4 +123,4 @@ def course_grading_policy(course_key):
                 final grade.
     """
     course = _retrieve_course(course_key)
-    return serializers.GradingPolicySerializer(course.raw_grader).data
+    return GradingPolicySerializer(course.raw_grader).data

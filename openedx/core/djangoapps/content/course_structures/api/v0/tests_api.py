@@ -1,9 +1,10 @@
 """
 Course Structure api.py tests
 """
-from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
+from .api import course_structure
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
+from courseware import courses
 
 
 class CourseStructureApiTests(ModuleStoreTestCase):
@@ -49,6 +50,9 @@ class CourseStructureApiTests(ModuleStoreTestCase):
         blocks = {}
 
         def add_block(xblock):
+            """
+            Add block
+            """
             children = xblock.get_children()
 
             if block_types is None or xblock.category in block_types:
@@ -80,13 +84,12 @@ class CourseStructureApiTests(ModuleStoreTestCase):
         """
         Verify that course_structure returns info for entire course.
         """
-        structure = api.course_structure(self.course.id)
+        structure = course_structure(self.course.id)
         expected = {
             u'root': unicode(self.course.location),
             u'blocks': self._expected_blocks()
         }
 
-        self.maxDiff = None
         self.assertDictEqual(structure, expected)
 
     def test_course_structure_with_block_types(self):
@@ -94,11 +97,10 @@ class CourseStructureApiTests(ModuleStoreTestCase):
         Verify that course_structure returns info for required block_types only when specific block_types are requested.
         """
         block_types = ['html', 'video']
-        structure = api.course_structure(self.course.id, block_types=block_types)
+        structure = course_structure(self.course.id, block_types=block_types)
         expected = {
             u'root': unicode(self.course.location),
             u'blocks': self._expected_blocks(block_types=block_types, get_parent=True)
         }
 
-        self.maxDiff = None
         self.assertDictEqual(structure, expected)

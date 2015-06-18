@@ -1,6 +1,6 @@
 """
 Run these tests @ Devstack:
-    paver test_system -s lms --fasttest --verbose --test_id=lms/djangoapps/course_structure_api
+    paver test_system -t openedx/core/djangoapps/content/course_structures/api/v0/tests.py --fasttest
 """
 # pylint: disable=missing-docstring,invalid-name,maybe-no-member,attribute-defined-outside-init
 from abc import ABCMeta

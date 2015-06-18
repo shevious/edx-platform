@@ -15,12 +15,9 @@ from rest_framework.reverse import reverse
 from xmodule.modulestore.django import modulestore
 from opaque_keys.edx.keys import CourseKey
 
-from openedx.core.djangoapps.content.course_structures.api.v0 import api
-from openedx.core.djangoapps.content.course_structures.api.v0 import serializers
-from openedx.core.djangoapps.content.course_structures.api.v0.errors import (
-    CourseNotFoundError,
-    CourseStructureNotAvailableError
-)
+from .api import course_structure, course_grading_policy
+from .serializers import CourseSerializer
+from .errors import CourseNotFoundError, CourseStructureNotAvailableError
 from courseware import courses
 from courseware.access import has_access
 from courseware.model_data import FieldDataCache
@@ -162,7 +159,7 @@ class CourseList(CourseViewMixin, ListAPIView):
     paginate_by = 10
     paginate_by_param = 'page_size'
     pagination_serializer_class = PaginationSerializer
-    serializer_class = serializers.CourseSerializer
+    serializer_class = CourseSerializer
 
     def get_queryset(self):
         course_ids = self.request.QUERY_PARAMS.get('course_id', None)
@@ -220,7 +217,7 @@ class CourseDetail(CourseViewMixin, RetrieveAPIView):
         * end: The course end date. If course end date is not specified, the
           value is null.
     """
-    serializer_class = serializers.CourseSerializer
+    serializer_class = CourseSerializer
 
     def get_object(self, queryset=None):
         return self.get_course_or_404()
@@ -265,7 +262,7 @@ class CourseStructure(CourseViewMixin, RetrieveAPIView):
     @CourseViewMixin.course_check
     def get(self, request, **kwargs):
         try:
-            return Response(api.course_structure(self.course_key))
+            return Response(course_structure(self.course_key))
         except CourseStructureNotAvailableError:
             # If we don't have data stored, we will try to regenerate it, so
             # return a 503 and as them to retry in 2 minutes.
@@ -300,7 +297,7 @@ class CourseGradingPolicy(CourseViewMixin, ListAPIView):
 
     @CourseViewMixin.course_check
     def get(self, request, **kwargs):
-        return Response(api.course_grading_policy(self.course_key))
+        return Response(course_grading_policy(self.course_key))
 
 
 @view_auth_classes()
