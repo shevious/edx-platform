@@ -104,7 +104,7 @@ def _is_user_author_or_privileged(cc_content, context):
     )
 
 
-def get_thread_list_url(request, course_key, topic_id_list=None, view=None):
+def get_thread_list_url(request, course_key, topic_id_list=None, following=False):
     """
     Returns the URL for the thread_list_url field, given a list of topic_ids
     """
@@ -112,7 +112,7 @@ def get_thread_list_url(request, course_key, topic_id_list=None, view=None):
     query_list = (
         [("course_id", unicode(course_key))] +
         [("topic_id", topic_id) for topic_id in topic_id_list or []] +
-        ([("view", view)] if view else [])
+        ([("following", following)] if following else [])
     )
     return request.build_absolute_uri(urlunparse(("", "", path, "", urlencode(query_list), "")))
 
@@ -146,7 +146,7 @@ def get_course(request, course_key):
             for blackout in course.get_discussion_blackout_datetimes()
         ],
         "thread_list_url": get_thread_list_url(request, course_key, topic_id_list=[]),
-        "following_thread_list_url": get_thread_list_url(request, course_key, view="following"),
+        "following_thread_list_url": get_thread_list_url(request, course_key, following=True),
         "topics_url": request.build_absolute_uri(
             reverse("course_topics", kwargs={"course_id": course_key})
         )
@@ -225,7 +225,7 @@ def get_course_topics(request, course_key):
     }
 
 
-def get_thread_list(request, course_key, page, page_size, topic_id_list=None, text_search=None, view=None):
+def get_thread_list(request, course_key, page, page_size, topic_id_list=None, text_search=None, following=False):
     """
     Return the list of all discussion threads pertaining to the given course
 
@@ -237,9 +237,9 @@ def get_thread_list(request, course_key, page, page_size, topic_id_list=None, te
     page_size: The number of threads to retrieve per page
     topic_id_list: The list of topic_ids to get the discussion threads for
     text_search A text search query string to match
-    view: One of "following", "unread", or "unanswered" to retrieve such threads
+    following: If true, retrieve only threads the requester is following
 
-    Note that topic_id_list, text_search, and view are mutually exclusive.
+    Note that topic_id_list, text_search, and following are mutually exclusive.
 
     Returns:
 
@@ -253,7 +253,7 @@ def get_thread_list(request, course_key, page, page_size, topic_id_list=None, te
     Http404: if the requesting user does not have access to the requested course
       or a page beyond the last is requested
     """
-    exclusive_param_count = sum(1 for param in [topic_id_list, text_search, view] if param)
+    exclusive_param_count = sum(1 for param in [topic_id_list, text_search, following] if param)
     if exclusive_param_count > 1:  # pragma: no cover
         raise ValueError("More than one mutually exclusive param passed to get_thread_list")
 
@@ -271,7 +271,7 @@ def get_thread_list(request, course_key, page, page_size, topic_id_list=None, te
         "text": text_search,
     }
     text_search_rewrite = None
-    if view == "following":
+    if following:
         threads, result_page, num_pages = context["cc_requester"].subscribed_threads(query_params)
     else:
         query_params["course_id"] = unicode(course.id)

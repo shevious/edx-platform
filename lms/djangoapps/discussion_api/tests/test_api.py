@@ -100,7 +100,7 @@ class GetCourseTest(UrlResetMixin, ModuleStoreTestCase):
                 "blackouts": [],
                 "thread_list_url": "http://testserver/api/discussion/v1/threads/?course_id=x%2Fy%2Fz",
                 "following_thread_list_url": (
-                    "http://testserver/api/discussion/v1/threads/?course_id=x%2Fy%2Fz&view=following"
+                    "http://testserver/api/discussion/v1/threads/?course_id=x%2Fy%2Fz&following=True"
                 ),
                 "topics_url": "http://testserver/api/discussion/v1/course_topics/x/y/z",
             }
@@ -738,14 +738,14 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
             "text": ["test search string"],
         })
 
-    def test_view_following(self):
+    def test_following(self):
         self.register_subscribed_threads_response(self.user, [], page=1, num_pages=1)
         result = get_thread_list(
             self.request,
             self.course.id,
             page=1,
             page_size=11,
-            view="following",
+            following=True,
         )
         self.assertEqual(
             result,

@@ -46,15 +46,12 @@ class ThreadListGetForm(_PaginationForm):
     """
     A form to validate query parameters in the thread list retrieval endpoint
     """
-    EXCLUSIVE_PARAMS = ["topic_id", "text_search", "view"]
+    EXCLUSIVE_PARAMS = ["topic_id", "text_search", "following"]
 
     course_id = CharField()
     topic_id = TopicIdField(required=False)
     text_search = CharField(required=False)
-    view = ChoiceField(
-        choices=[(choice, choice) for choice in ["following"]],
-        required=False
-    )
+    following = NullBooleanField(required=False)
 
     def clean_course_id(self):
         """Validate course_id"""
@@ -63,6 +60,14 @@ class ThreadListGetForm(_PaginationForm):
             return CourseLocator.from_string(value)
         except InvalidKeyError:
             raise ValidationError("'{}' is not a valid course id".format(value))
+
+    def clean_following(self):
+        """Validate following"""
+        value = self.cleaned_data["following"]
+        if value is False:
+            raise ValidationError("The value of the 'following' parameter must be true.")
+        else:
+            return value
 
     def clean(self):
         cleaned_data = super(ThreadListGetForm, self).clean()
