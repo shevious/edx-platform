@@ -26,7 +26,13 @@ from util.file import course_filename_prefix_generator, UniversalNewlineIterator
 from xmodule.modulestore.django import modulestore
 from xmodule.split_test_module import get_split_user_partitions
 from django.utils.translation import ugettext as _
-from certificates.models import CertificateWhitelist, certificate_info_for_user
+from certificates.models import (
+    CertificateWhitelist,
+    certificate_info_for_user,
+    certificate_status_for_student,
+    CertificateStatuses
+)
+from certificates.api import generate_user_certificates
 from courseware.courses import get_course_by_id, get_problems_in_section
 from courseware.grades import iterate_grades_for
 from courseware.models import StudentModule
@@ -1019,6 +1025,47 @@ def upload_may_enroll_csv(_xmodule_instance_args, _entry_id, course_id, task_inp
 
     # Perform the upload
     upload_csv_to_report_store(rows, 'may_enroll_info', course_id, start_date)
+
+    return task_progress.update_task_state(extra_meta=current_step)
+
+
+def generate_students_certificates(_xmodule_instance_args, _entry_id, course_id, task_input, action_name):
+    """
+    For a given `course_id`, generate certificates for all students
+    that are enrolled.
+    """
+    start_time = time()
+    enrolled_students = CourseEnrollment.objects.users_enrolled_in(course_id)
+    task_progress = TaskProgress(action_name, enrolled_students.count(), start_time)
+
+    current_step = {'step': 'Calculating students already have certificates'}
+    task_progress.update_task_state(extra_meta=current_step)
+
+    # compute those students where certificates not already generated
+    students_require_certs = [
+        student for student in enrolled_students
+        if certificate_status_for_student(student, course_id)['status'] == CertificateStatuses.unavailable
+    ]
+
+    task_progress.skipped = task_progress.total - len(students_require_certs)
+
+    current_step = {'step': 'Generating Certificates'}
+    task_progress.update_task_state(extra_meta=current_step)
+
+    course = modulestore().get_course(course_id, depth=0)
+    # Generate certificate for each student
+    for student in task_progress.attempted:
+        task_progress.attempted += 1
+        status = generate_user_certificates(
+            student,
+            course_id,
+            course=course
+        )
+
+        if status in [CertificateStatuses.generating, CertificateStatuses.downloadable]:
+            task_progress.succeeded += 1
+        else:
+            task_progress.failed += 1
 
     return task_progress.update_task_state(extra_meta=current_step)
 

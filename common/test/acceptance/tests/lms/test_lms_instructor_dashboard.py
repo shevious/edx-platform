@@ -396,3 +396,33 @@ class DataDownloadsTest(BaseInstructorDashboardTest):
         self.data_download_section.wait_for_available_report()
         self.verify_report_requested_event(report_name)
         self.verify_report_download(report_name)
+
+
+@attr('shard_5')
+class CertificatesTest(BaseInstructorDashboardTest):
+    """
+    Tests for Certificates functionality on instructor dashboard.
+    """
+
+    def setUp(self):
+        super(CertificatesTest, self).setUp()
+        self.course_fixture = CourseFixture(**self.course_info).install()
+        self.log_in_as_instructor()
+        instructor_dashboard_page = self.visit_instructor_dashboard()
+        self.certificates_section = instructor_dashboard_page.select_certificates()
+
+    def test_generate_certificates_buttons_is_visible(self):
+        """
+        Scenario: On the Certificates tab of the Instructor Dashboard, Generate Certificates button is visible.
+            Given that I am on the Certificates tab on the Instructor Dashboard
+            Then I see 'Generate Certificates' button
+        """
+        self.assertTrue(self.certificates_section.generate_certificates_button.visible)
+
+    def test_pending_tasks_section_is_visible(self):
+        """
+        Scenario: On the Certificates tab of the Instructor Dashboard, Pending Instructor Tasks section is visible.
+            Given that I am on the Certificates tab on the Instructor Dashboard
+            Then I see 'Pending Instructor Tasks' section
+        """
+        self.assertTrue(self.certificates_section.pending_instructor_tasks_section.visible)

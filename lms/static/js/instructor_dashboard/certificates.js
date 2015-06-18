@@ -1,6 +1,6 @@
 var edx = edx || {};
 
-(function( $, gettext ) {
+(function($, gettext, _) {
     'use strict';
 
     edx.instructor_dashboard = edx.instructor_dashboard || {};
@@ -34,6 +34,10 @@ var edx = edx || {};
             window.location.reload();
         });
 
+
+        /**
+         * Start generating certificates for all students.
+         */
         var $section = $("section#certificates");
         $section.on('click', '#btn-start-generating-certificates', function(event) {
             if ( !confirm( gettext('Start generating certificates for all students in this course?') ) ) {
@@ -55,15 +59,34 @@ var edx = edx || {};
                 }
             });
         });
+    });
 
-        var instructor_tasks = new window.InstructorDashboard.util.PendingInstructorTasks($section);
-        $section.prototype.onClickTitle = function() {
-            return instructor_tasks.task_poller.start();
+    var Certificates = (function() {
+        function Certificates($section) {
+            $section.data('wrapper', this);
+            this.instructor_tasks = new window.InstructorDashboard.util.PendingInstructorTasks($section);
+        }
+
+        Certificates.prototype.onClickTitle = function() {
+            return this.instructor_tasks.task_poller.start();
         };
 
-        $section.prototype.onExit = function() {
+        Certificates.prototype.onExit = function() {
             return this.instructor_tasks.task_poller.stop();
         };
+        return Certificates;
+    })();
 
+    _.defaults(window, {
+        InstructorDashboard: {}
     });
-})( $, gettext );
+
+    _.defaults(window.InstructorDashboard, {
+        sections: {}
+    });
+
+    _.defaults(window.InstructorDashboard.sections, {
+        Certificates: Certificates
+    });
+
+})($, gettext, _);
