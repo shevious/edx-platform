@@ -751,6 +751,10 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
             result,
             {"results": [], "next": None, "previous": None, "text_search_rewrite": None}
         )
+        self.assertEqual(
+            urlparse(httpretty.last_request().path).path,
+            "/api/v1/users/{}/subscribed_threads".format(self.user.id)
+        )
         self.assert_last_query_params({
             "course_id": [unicode(self.course.id)],
             "sort_key": ["date"],

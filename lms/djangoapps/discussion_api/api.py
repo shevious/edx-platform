@@ -145,7 +145,7 @@ def get_course(request, course_key):
             {"start": blackout["start"].isoformat(), "end": blackout["end"].isoformat()}
             for blackout in course.get_discussion_blackout_datetimes()
         ],
-        "thread_list_url": get_thread_list_url(request, course_key, topic_id_list=[]),
+        "thread_list_url": get_thread_list_url(request, course_key),
         "following_thread_list_url": get_thread_list_url(request, course_key, following=True),
         "topics_url": request.build_absolute_uri(
             reverse("course_topics", kwargs={"course_id": course_key})
