@@ -1029,7 +1029,8 @@ def upload_may_enroll_csv(_xmodule_instance_args, _entry_id, course_id, task_inp
     return task_progress.update_task_state(extra_meta=current_step)
 
 
-def generate_students_certificates(_xmodule_instance_args, _entry_id, course_id, task_input, action_name):
+def generate_students_certificates(
+        _xmodule_instance_args, _entry_id, course_id, task_input, action_name):  # pylint: disable=unused-argument
     """
     For a given `course_id`, generate certificates for all students
     that are enrolled.
@@ -1054,7 +1055,7 @@ def generate_students_certificates(_xmodule_instance_args, _entry_id, course_id,
 
     course = modulestore().get_course(course_id, depth=0)
     # Generate certificate for each student
-    for student in task_progress.attempted:
+    for student in students_require_certs:
         task_progress.attempted += 1
         status = generate_user_certificates(
             student,

@@ -919,7 +919,7 @@ class CertificatesPage(PageObject):
         return self.get_selector('#btn-start-generating-certificates')
 
     @property
-    def pending_instructor_tasks_section(self):
+    def pending_tasks_section(self):
         """
         Returns the "Pending Instructor Tasks" section.
         """

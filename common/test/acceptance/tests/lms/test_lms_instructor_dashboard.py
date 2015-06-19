@@ -425,4 +425,4 @@ class CertificatesTest(BaseInstructorDashboardTest):
             Given that I am on the Certificates tab on the Instructor Dashboard
             Then I see 'Pending Instructor Tasks' section
         """
-        self.assertTrue(self.certificates_section.pending_instructor_tasks_section.visible)
+        self.assertTrue(self.certificates_section.pending_tasks_section.visible)
