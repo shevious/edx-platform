@@ -20,6 +20,7 @@ from course_modes.models import CourseMode
 from courseware import courses
 from edxmako.shortcuts import render_to_response
 from enrollment.api import add_enrollment
+from enrollment.views import EmbargoMixin
 from microsite_configuration import microsite
 from student.models import CourseEnrollment
 from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser
@@ -32,7 +33,7 @@ from django.utils.translation import ugettext as _
 log = logging.getLogger(__name__)
 
 
-class BasketsView(APIView):
+class BasketsView(APIView, EmbargoMixin):
     """ Creates a basket with a course seat and enrolls users. """
 
     # LMS utilizes User.user_is_active to indicate email verification, not whether an account is active. Sigh!
@@ -75,6 +76,11 @@ class BasketsView(APIView):
         valid, course_key, error = self._is_data_valid(request)
         if not valid:
             return DetailResponse(error, status=HTTP_406_NOT_ACCEPTABLE)
+
+        embargo_response = self.get_embargo_response(request, course_key, user)
+
+        if embargo_response:
+            return embargo_response
 
         # Don't do anything if an enrollment already exists
         course_id = unicode(course_key)

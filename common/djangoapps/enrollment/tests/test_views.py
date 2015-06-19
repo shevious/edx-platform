@@ -31,6 +31,12 @@ from student.tests.factories import UserFactory, CourseModeFactory
 from student.models import CourseEnrollment
 from embargo.test_utils import restrict_course
 
+class UrlMixin(object):
+
+    def get_absolute_url(self, path):
+        """ Generate an absolute URL for a resource on the test server. """
+        return u'http://testserver/{}'.format(path.lstrip('/'))
+
 
 class EnrollmentTestMixin(object):
     """ Mixin with methods useful for testing enrollments. """
@@ -701,7 +707,7 @@ class EnrollmentTest(EnrollmentTestMixin, ModuleStoreTestCase, APITestCase):
 
 
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
-class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, ModuleStoreTestCase):
+class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, UrlMixin, ModuleStoreTestCase):
     """Test that enrollment is blocked from embargoed countries. """
 
     USERNAME = "Bob"
@@ -725,10 +731,6 @@ class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, ModuleStoreTestC
             'user': self.user.username
         })
 
-    def _get_absolute_url(self, path):
-        """ Generate an absolute URL for a resource on the test server. """
-        return u'http://testserver/{}'.format(path.lstrip('/'))
-
     def assert_access_denied(self, user_message_path):
         """
         Verify that the view returns HTTP status 403 and includes a URL in the response, and no enrollment is created.
@@ -741,7 +743,7 @@ class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, ModuleStoreTestC
 
         # Expect that the redirect URL is included in the response
         resp_data = json.loads(response.content)
-        user_message_url = self._get_absolute_url(user_message_path)
+        user_message_url = self.get_absolute_url(user_message_path)
         self.assertEqual(resp_data['user_message_url'], user_message_url)
 
         # Verify that we were not enrolled

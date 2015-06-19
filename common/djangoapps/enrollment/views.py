@@ -36,6 +36,25 @@ from student.models import User
 log = logging.getLogger(__name__)
 
 
+class EmbargoMixin(object):
+
+    def get_embargo_response(self, request, course_id, user):
+        """ Check whether any country access rules block the user from enrollment
+            We do this at the view level (rather than the Python API level)
+            because this check requires information about the HTTP request. """
+        redirect_url = embargo_api.redirect_if_blocked(
+            course_id, user=user, ip_address=get_ip(request), url=request.path)
+        if redirect_url:
+            return Response(
+                status=status.HTTP_403_FORBIDDEN,
+                data={
+                    "message": (
+                        u"Users from this location cannot access the course '{course_id}'."
+                    ).format(course_id=course_id),
+                    "user_message_url": request.build_absolute_uri(redirect_url)
+                }
+            )
+
 class EnrollmentCrossDomainSessionAuth(SessionAuthenticationAllowInactiveUser, SessionAuthenticationCrossDomainCsrf):
     """Session authentication that allows inactive users and cross-domain requests. """
     pass
@@ -160,7 +179,6 @@ class EnrollmentView(APIView, ApiKeyPermissionMixIn):
                 }
             )
 
-
 @can_disable_rate_limit
 class EnrollmentCourseDetailView(APIView):
     """
@@ -243,7 +261,7 @@ class EnrollmentCourseDetailView(APIView):
 
 
 @can_disable_rate_limit
-class EnrollmentListView(APIView, ApiKeyPermissionMixIn):
+class EnrollmentListView(APIView, ApiKeyPermissionMixIn, EmbargoMixin):
     """
         **Use Cases**
 
@@ -406,21 +424,10 @@ class EnrollmentListView(APIView, ApiKeyPermissionMixIn):
                 }
             )
 
-        # Check whether any country access rules block the user from enrollment
-        # We do this at the view level (rather than the Python API level)
-        # because this check requires information about the HTTP request.
-        redirect_url = embargo_api.redirect_if_blocked(
-            course_id, user=user, ip_address=get_ip(request), url=request.path)
-        if redirect_url:
-            return Response(
-                status=status.HTTP_403_FORBIDDEN,
-                data={
-                    "message": (
-                        u"Users from this location cannot access the course '{course_id}'."
-                    ).format(course_id=course_id),
-                    "user_message_url": request.build_absolute_uri(redirect_url)
-                }
-            )
+        embargo_response = self.get_embargo_response(request, course_id, user)
+
+        if embargo_response:
+            return embargo_response
 
         try:
             is_active = request.DATA.get('is_active')
