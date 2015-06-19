@@ -13,6 +13,8 @@ from django.core.urlresolvers import reverse
 from capa.tests.response_xml_factory import MultipleChoiceResponseXMLFactory
 from oauth2_provider.tests.factories import AccessTokenFactory, ClientFactory
 from opaque_keys.edx.locator import CourseLocator
+import provider
+from provider.oauth2.models import AccessToken, Client
 from xmodule.error_module import ErrorDescriptor
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.django import modulestore
@@ -46,8 +48,8 @@ class CourseViewTestsMixin(object):
 
     def create_user_and_access_token(self):
         self.create_user()
-        self.oauth_client = ClientFactory.create()
-        self.access_token = AccessTokenFactory.create(user=self.user, client=self.oauth_client).token
+        self.oauth_client = Client.objects.create(client_type=provider.constants.CONFIDENTIAL)
+        self.access_token = AccessToken.objects.create(user=self.user, client=self.oauth_client).token
 
     def create_test_data(self):
         self.invalid_course_id = 'foo/bar/baz'
@@ -190,7 +192,7 @@ class CourseDetailTestMixin(object):
 
     def test_not_authorized(self):
         user = StaffFactory(course_key=self.course.id)
-        access_token = AccessTokenFactory.create(user=user, client=self.oauth_client).token
+        access_token = AccessToken.objects.create(user=user, client=self.oauth_client).token
         auth_header = 'Bearer ' + access_token
 
         # Access should be granted if the proper access token is supplied.
@@ -254,7 +256,7 @@ class CourseListTests(CourseViewTestsMixin, ModuleStoreTestCase):
         Unauthorized users should get an empty list.
         """
         user = StaffFactory(course_key=self.course.id)
-        access_token = AccessTokenFactory.create(user=user, client=self.oauth_client).token
+        access_token = AccessToken.objects.create(user=user, client=self.oauth_client).token
         auth_header = 'Bearer ' + access_token
 
         # Data should be returned if the user is authorized.

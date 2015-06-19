@@ -4,7 +4,6 @@ Course Structure api.py tests
 from .api import course_structure
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
-from courseware import courses
 
 
 class CourseStructureApiTests(ModuleStoreTestCase):
