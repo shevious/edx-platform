@@ -31,6 +31,11 @@ define([
                 this.$el.show();
                 this.updateRemainingTime(this);
                 this.timerId = setInterval(this.updateRemainingTime, 1000, this);
+                window.onbeforeunload = function  () {
+                    return "If you leave, any information you've entered may be\n" +
+                        "lost. Additionally, closing this window, regardless of\n" +
+                        "you being done with your work, will end your proctoring session.";
+                }
             }
             return this;
         },
@@ -41,6 +46,7 @@ define([
             self.$el.find('span#time_remaining_id b').html(self.model.getFormattedRemainingTime());
             if (self.model.getRemainingSeconds()<=0) {
                 clearInterval(self.timerId); // stop the timer once the time finishes.
+                window.onbeforeunload = null;
             }
         }
     });
