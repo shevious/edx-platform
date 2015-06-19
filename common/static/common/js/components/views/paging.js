@@ -1,9 +1,9 @@
 ;(function (define) {
     'use strict';
-    define(["underscore", "backbone", "gettext", "common/js/components/views/paging_mixin"],
-        function(_, Backbone, gettext, PagingMixin) {
+    define(["underscore", "backbone", "gettext"],
+        function(_, Backbone, gettext) {
 
-            var PagingView = Backbone.View.extend(PagingMixin).extend({
+            var PagingView = Backbone.View.extend({
                 // takes a Backbone Paginator as a model
 
                 sortableColumns: {},
@@ -31,23 +31,6 @@
 
                 onError: function() {
                     // Do nothing by default
-                },
-
-                nextPage: function() {
-                    var collection = this.collection,
-                        currentPage = collection.currentPage,
-                        lastPage = collection.totalPages - 1;
-                    if (currentPage < lastPage) {
-                        this.setPage(currentPage + 1);
-                    }
-                },
-
-                previousPage: function() {
-                    var collection = this.collection,
-                        currentPage = collection.currentPage;
-                    if (currentPage > 0) {
-                        this.setPage(currentPage - 1);
-                    }
                 },
 
                 registerFilterableColumn: function(columnName, displayName, fieldName) {
@@ -127,7 +110,7 @@
                         collection.sortDirection = defaultSortDirection;
                     }
                     this.sortColumn = sortColumn;
-                    this.setPage(0);
+                    this.collection.setPage(0);
                 },
 
                 selectFilter: function(filterColumn) {
@@ -139,7 +122,7 @@
                         collection.filterField = filterField;
                     }
                     this.filterColumn = filterColumn;
-                    this.setPage(0);
+                    this.collection.setPage(0);
                 }
             });
             return PagingView;
