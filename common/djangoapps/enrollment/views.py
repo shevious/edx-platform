@@ -37,7 +37,9 @@ log = logging.getLogger(__name__)
 
 
 class EmbargoMixin(object):
-
+    """
+    Mixins for embargo restrictions
+    """
     def get_embargo_response(self, request, course_id, user):
         """ Check whether any country access rules block the user from enrollment
             We do this at the view level (rather than the Python API level)

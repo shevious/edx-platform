@@ -33,7 +33,9 @@ from embargo.test_utils import restrict_course
 
 
 class UrlMixin(object):
-
+    """
+    Mixins for URL processing
+    """
     def get_absolute_url(self, path):
         """ Generate an absolute URL for a resource on the test server. """
         return u'http://testserver/{}'.format(path.lstrip('/'))
