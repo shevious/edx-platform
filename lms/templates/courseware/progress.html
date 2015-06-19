@@ -113,7 +113,7 @@ from django.utils.http import urlquote_plus
                     <span class="eligibility_msg">${student.get_full_name()}, ${_("You are no longer eligible for this course.")}</span>
                 %elif credit_course_requirements['eligibility_status'] == 'eligible':
                     <span class="eligibility_msg">${student.get_full_name()}, ${_("You have met the requirements for credit in this course.")}
-                        <a href="${reverse('dashboard')}">${_("Go to your dashboard")}</a> ${_("to purchase course credit.")}
+                        ${_("{link} to purchase course credit.").format(link="<a href={url}>{url_name}</a>".format(url = reverse('dashboard'), url_name = 'Go to your dashboard'))}
                     </span>
                 %elif credit_course_requirements['eligibility_status'] == 'partial_eligible':
                     <span>${student.get_full_name()}, ${_("You have not yet met the requirements for credit.")}</span>
@@ -144,7 +144,7 @@ from django.utils.http import urlquote_plus
                 %endfor
                  </div>
                 <button class="detail-collapse" aria-live="polite"><i class="fa fa-caret-up"></i>
-                    <span class="requirement-detail">${_("Less")}</span><span class="sr"> detail</span>
+                    <span class="requirement-detail">${_("Less")}</span>
                 </button>
             </div>
         </section>
