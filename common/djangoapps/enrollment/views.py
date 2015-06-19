@@ -55,6 +55,7 @@ class EmbargoMixin(object):
                 }
             )
 
+
 class EnrollmentCrossDomainSessionAuth(SessionAuthenticationAllowInactiveUser, SessionAuthenticationCrossDomainCsrf):
     """Session authentication that allows inactive users and cross-domain requests. """
     pass
@@ -178,6 +179,7 @@ class EnrollmentView(APIView, ApiKeyPermissionMixIn):
                     ).format(username=username, course_id=course_id)
                 }
             )
+
 
 @can_disable_rate_limit
 class EnrollmentCourseDetailView(APIView):

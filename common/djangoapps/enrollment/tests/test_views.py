@@ -31,6 +31,7 @@ from student.tests.factories import UserFactory, CourseModeFactory
 from student.models import CourseEnrollment
 from embargo.test_utils import restrict_course
 
+
 class UrlMixin(object):
 
     def get_absolute_url(self, path):

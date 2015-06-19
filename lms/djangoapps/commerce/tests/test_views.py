@@ -25,6 +25,7 @@ from student.models import CourseEnrollment
 from student.tests.factories import UserFactory, CourseModeFactory
 from student.tests.tests import EnrollmentEventTestMixin
 
+
 class UserMixin(object):
     """ Mixin for tests involving users. """
 
