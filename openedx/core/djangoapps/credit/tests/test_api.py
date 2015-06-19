@@ -521,7 +521,7 @@ class CreditProviderIntegrationApiTests(CreditApiTestBase):
         self.assertEqual(self.PROVIDER_ID, provider['id'])
 
         self.assertIn('status', user_request)
-        self.assertEqual(user_request['status'], "pending")
+        self.assertEqual(user_request['status'], 'pending')
 
     def _configure_credit(self):
 
