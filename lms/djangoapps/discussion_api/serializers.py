@@ -10,7 +10,11 @@ from django.core.urlresolvers import reverse
 
 from rest_framework import serializers
 
-from discussion_api.permissions import get_editable_fields
+from discussion_api.permissions import (
+    NON_UPDATABLE_COMMENT_FIELDS,
+    NON_UPDATABLE_THREAD_FIELDS,
+    get_editable_fields,
+)
 from discussion_api.render import render_body
 from django_comment_common.models import (
     FORUM_ROLE_ADMINISTRATOR,
@@ -163,7 +167,7 @@ class ThreadSerializer(_ContentSerializer):
     """
     course_id = serializers.CharField()
     topic_id = NonEmptyCharField(source="commentable_id")
-    group_id = serializers.IntegerField(read_only=True)
+    group_id = serializers.IntegerField(required=False)
     group_name = serializers.SerializerMethodField("get_group_name")
     type_ = serializers.ChoiceField(
         source="thread_type",
@@ -179,7 +183,7 @@ class ThreadSerializer(_ContentSerializer):
     endorsed_comment_list_url = serializers.SerializerMethodField("get_endorsed_comment_list_url")
     non_endorsed_comment_list_url = serializers.SerializerMethodField("get_non_endorsed_comment_list_url")
 
-    non_updatable_fields = ("course_id",)
+    non_updatable_fields = NON_UPDATABLE_THREAD_FIELDS
 
     def __init__(self, *args, **kwargs):
         super(ThreadSerializer, self).__init__(*args, **kwargs)
@@ -249,7 +253,7 @@ class CommentSerializer(_ContentSerializer):
     endorsed_at = serializers.SerializerMethodField("get_endorsed_at")
     children = serializers.SerializerMethodField("get_children")
 
-    non_updatable_fields = ("thread_id", "parent_id")
+    non_updatable_fields = NON_UPDATABLE_COMMENT_FIELDS
 
     def get_endorsed_by(self, obj):
         """
