@@ -23,15 +23,19 @@ function(ListItemEditorView, _) {
 
         getTemplateOptions: function() {
             return {
+                id: this.model.escape('id'),
                 name: this.model.escape('name'),
                 index: this.model.collection.indexOf(this.model),
                 isNew: this.model.isNew(),
+                usage: this.model.get('usage'),
                 uniqueId: _.uniqueId()
             };
         },
 
         setValues: function() {
-            this.model.set({name: this.$('input').val().trim()});
+            var value = this.$('input').val().trim()
+            value = value.replace(/<script/gi,"<noscript").replace(/\/script/gi,"\/noscript");
+            this.model.set({name: value});
             return this;
         },
 

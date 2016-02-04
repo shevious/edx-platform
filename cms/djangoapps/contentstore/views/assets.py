@@ -5,9 +5,8 @@ import json
 
 from django.http import HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
-from django_future.csrf import ensure_csrf_cookie
-from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
 
 from edxmako.shortcuts import render_to_response
@@ -18,6 +17,7 @@ from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore
 from xmodule.contentstore.content import StaticContent
 from xmodule.exceptions import NotFoundError
+from contentstore.views.exception import AssetNotFoundException
 from django.core.exceptions import PermissionDenied
 from opaque_keys.edx.keys import CourseKey, AssetKey
 
@@ -28,6 +28,8 @@ from django.utils.translation import ugettext as _
 from pymongo import ASCENDING, DESCENDING
 from student.auth import has_course_author_access
 from xmodule.modulestore.exceptions import ItemNotFoundError
+
+from django.views.decorators.csrf import csrf_exempt
 
 __all__ = ['assets_handler']
 
@@ -81,7 +83,6 @@ def _asset_index(request, course_key):
     Supports start (0-based index into the list of assets) and max query parameters.
     """
     course_module = modulestore().get_course(course_key)
-
     return render_to_response('asset_index.html', {
         'context_course': course_module,
         'max_file_size_in_mbs': settings.MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB,
@@ -164,14 +165,28 @@ def _assets_json(request, course_key):
                 'thumbnail', thumbnail_location[4])
 
         asset_locked = asset.get('locked', False)
-        asset_json.append(_get_asset_json(
-            asset['displayname'],
-            asset['contentType'],
-            asset['uploadDate'],
-            asset_location,
-            thumbnail_location,
-            asset_locked
-        ))
+        url_split = request.META.get('HTTP_REFERER').split("/")
+        if ( url_split[3] == 'cdn' ) :
+            thumbnail_location = asset['cdn_url'][:asset['cdn_url'].rfind('.')]+"_0.png"
+            thumbnail_location = thumbnail_location[:thumbnail_location.rfind('/')] +"/thumb" + thumbnail_location[thumbnail_location.rfind('/'):]
+            asset_json.append(_get_cdn_json(
+                asset['displayname'],
+                asset['contentType'],
+                asset['uploadDate'],
+                asset_location,
+                thumbnail_location,
+                asset_locked,
+                asset['cdn_url']
+            ))
+        else :
+            asset_json.append(_get_asset_json(
+                asset['displayname'],
+                asset['contentType'],
+                asset['uploadDate'],
+                asset_location,
+                thumbnail_location,
+                asset_locked
+            ))
 
     return JsonResponse({
         'start': start,
@@ -193,10 +208,16 @@ def _get_assets_for_page(request, course_key, options):
     sort = options['sort']
     filter_params = options['filter_params'] if options['filter_params'] else None
     start = current_page * page_size
+    url_split = request.META.get('HTTP_REFERER').split("/")
 
-    return contentstore().get_all_content_for_course(
-        course_key, start=start, maxresults=page_size, sort=sort, filter_params=filter_params
-    )
+    if ( url_split[3] == 'cdn' ):
+        return contentstore().get_all_cdn_content_for_course(
+            course_key, start=start, maxresults=page_size, sort=sort, filter_params=filter_params
+        )
+    else:
+        return contentstore().get_all_content_for_course(
+            course_key, start=start, maxresults=page_size, sort=sort, filter_params=filter_params
+        )
 
 
 def get_file_size(upload_file):
@@ -283,6 +304,7 @@ def _upload_asset(request, course_key):
 
     # readback the saved content - we need the database timestamp
     readback = contentstore().find(content.location)
+    # readback = contentstore().find_cdn(content.location)
     locked = getattr(content, 'locked', False)
     response_payload = {
         'asset': _get_asset_json(
@@ -295,7 +317,32 @@ def _upload_asset(request, course_key):
         ),
         'msg': _('Upload completed')
     }
+    return JsonResponse(response_payload)
 
+
+def save_cdn(request, course_key):
+    content = request.REQUEST
+    content.name=request.REQUEST['file_name']
+    content.cdn_url=request.REQUEST['cdn_url']
+    content.content_type=request.REQUEST['file_type']
+    content.thumbnail_location=request.REQUEST['thumbnail_url']
+    content.location = StaticContent.compute_cdn_location(course_key, request.REQUEST['file_name'])
+    contentstore().save_cdn(content)
+
+    readback = contentstore().find_cdn(content.location)
+    locked = False;
+    response_payload = {
+        'asset': _get_asset_json(
+            content.name,
+            content.content_type,
+            readback.last_modified_at,
+            content.location,
+            content.thumbnail_location,
+            locked
+        ),
+        'msg': _('Upload completed'),
+        'result': 'success'
+    }
     return JsonResponse(response_payload)
 
 
@@ -310,39 +357,16 @@ def _update_asset(request, course_key, asset_key):
     asset_path_encoding: the odd /c4x/org/course/category/name repr of the asset (used by Backbone as the id)
     """
     if request.method == 'DELETE':
-        # Make sure the item to delete actually exists.
         try:
-            content = contentstore().find(asset_key)
-        except NotFoundError:
+            delete_asset(course_key, asset_key)
+            return JsonResponse()
+        except AssetNotFoundException:
             return JsonResponse(status=404)
-
-        # ok, save the content into the trashcan
-        contentstore('trashcan').save(content)
-
-        # see if there is a thumbnail as well, if so move that as well
-        if content.thumbnail_location is not None:
-            # We are ignoring the value of the thumbnail_location-- we only care whether
-            # or not a thumbnail has been stored, and we can now easily create the correct path.
-            thumbnail_location = course_key.make_asset_key('thumbnail', asset_key.name)
-            try:
-                thumbnail_content = contentstore().find(thumbnail_location)
-                contentstore('trashcan').save(thumbnail_content)
-                # hard delete thumbnail from origin
-                contentstore().delete(thumbnail_content.get_id())
-                # remove from any caching
-                del_cached_content(thumbnail_location)
-            except:
-                logging.warning('Could not delete thumbnail: %s', thumbnail_location)
-
-        # delete the original
-        contentstore().delete(content.get_id())
-        # remove from cache
-        del_cached_content(content.location)
-        return JsonResponse()
-
     elif request.method in ('PUT', 'POST'):
         if 'file' in request.FILES:
             return _upload_asset(request, course_key)
+        elif 'cdn_url' in request.REQUEST:
+            return save_cdn(request, course_key)
         else:
             # Update existing asset
             try:
@@ -353,6 +377,40 @@ def _update_asset(request, course_key, asset_key):
             # Delete the asset from the cache so we check the lock status the next time it is requested.
             del_cached_content(asset_key)
             return JsonResponse(modified_asset, status=201)
+
+
+def delete_asset(course_key, asset_key):
+    """
+    Deletes asset represented by given 'asset_key' in the course represented by given course_key.
+    """
+    # Make sure the item to delete actually exists.
+    try:
+        content = contentstore().find(asset_key)
+    except NotFoundError:
+        raise AssetNotFoundException
+
+    # ok, save the content into the trashcan
+    contentstore('trashcan').save(content)
+
+    # see if there is a thumbnail as well, if so move that as well
+    if content.thumbnail_location is not None:
+        # We are ignoring the value of the thumbnail_location-- we only care whether
+        # or not a thumbnail has been stored, and we can now easily create the correct path.
+        thumbnail_location = course_key.make_asset_key('thumbnail', asset_key.name)
+        try:
+            thumbnail_content = contentstore().find(thumbnail_location)
+            contentstore('trashcan').save(thumbnail_content)
+            # hard delete thumbnail from origin
+            contentstore().delete(thumbnail_content.get_id())
+            # remove from any caching
+            del_cached_content(thumbnail_location)
+        except Exception:  # pylint: disable=broad-except
+            logging.warning('Could not delete thumbnail: %s', thumbnail_location)
+
+    # delete the original
+    contentstore().delete(content.get_id())
+    # remove from cache
+    del_cached_content(content.location)
 
 
 def _get_asset_json(display_name, content_type, date, location, thumbnail_location, locked):
@@ -371,5 +429,18 @@ def _get_asset_json(display_name, content_type, date, location, thumbnail_locati
         'thumbnail': StaticContent.serialize_asset_key_with_slash(thumbnail_location) if thumbnail_location else None,
         'locked': locked,
         # Needed for Backbone delete/update.
+        'id': unicode(location)
+    }
+
+def _get_cdn_json(display_name, content_type, date, location, thumbnail_location, locked, cdn_url):
+    return {
+        'display_name': display_name,
+        'content_type': content_type,
+        'date_added': get_default_time_display(date),
+        'url': cdn_url,
+        'external_url': cdn_url,
+        'portable_url': StaticContent.get_static_path_from_location(location),
+        'thumbnail': thumbnail_location,
+        # 'locked': locked,
         'id': unicode(location)
     }

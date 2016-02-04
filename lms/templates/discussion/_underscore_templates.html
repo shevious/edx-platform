@@ -1,14 +1,15 @@
-<%! from django.utils.translation import ugettext as _ %>
-<%! from django.template.defaultfilters import escapejs %>
-<%! from django_comment_client.permissions import has_permission %>
-
 <%namespace name='static' file='../static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from django.template.defaultfilters import escapejs
+from django_comment_client.permissions import has_permission
+%>
 
 ## IMPORTANT: In order to keep js tests valid and relevant, please be sure to update the appropriate HTML in
 ## common/static/coffee/spec/discussion_spec_helper.coffee is changed and regenerated, whenever this one changes.
 <script aria-hidden="true" type="text/template" id="thread-template">
     <article class="discussion-article" data-id="${'<%- id %>'}">
-        <div class="thread-wrapper">
+        <div class="thread-wrapper" tabindex="-1">
             <div class="forum-thread-main-wrapper">
                 <div class="thread-content-wrapper"></div>
                 <div class="post-extended-content">
@@ -20,7 +21,7 @@
                 <div class="add-response">
                     <button class="button add-response-btn">
                         <i class="icon fa fa-reply"></i>
-                        <span class="add-response-btn-text">${_('Add A Response')}</span>
+                        <span class="add-response-btn-text">답변 작성</span>
                     </button>
                 </div>
                 <ol class="responses js-response-list"/>
@@ -30,7 +31,7 @@
                 </div>
                 % if course is UNDEFINED or has_permission(user, 'create_comment', course.id):
                 <form class="discussion-reply-new" data-id="${'<%- id %>'}">
-                    <h4>${_("Post a response:")}</h4>
+                    <h4>답변 작성:</h4>
                     <ul class="discussion-errors"></ul>
                     <div class="reply-body" data-id="${'<%- id %>'}"></div>
                     <div class="reply-post-control">
@@ -41,15 +42,15 @@
             </div>
         </div>
         <div class="post-tools">
-            <a href="javascript:void(0)" class="forum-thread-expand"><span class="icon fa fa-plus"/> ${_("Expand discussion")}</a>
-            <a href="javascript:void(0)" class="forum-thread-collapse"><span class="icon fa fa-minus"/> ${_("Collapse discussion")}</a>
+            <a href="javascript:void(0)" class="forum-thread-expand"><span class="icon fa fa-plus"/>더보기</a>
+            <a href="javascript:void(0)" class="forum-thread-collapse"><span class="icon fa fa-minus"/>감추기</a>
         </div>
     </article>
 </script>
 
 % for template_name in ['thread-show']:
 <script aria-hidden="true" type="text/template" id="${template_name}-template">
-    <%static:include path="js/discussion/${template_name}.underscore" />
+    <%static:include path="common/templates/discussion/${template_name}.underscore" />
 </script>
 % endfor
 
@@ -81,7 +82,7 @@
                 <ul class="discussion-errors"></ul>
                 <label class="sr" for="add-new-comment">${_("Add a comment")}</label>
                 <div class="comment-body" id="add-new-comment" data-id="${'<%- wmdId %>'}"
-                data-placeholder="${_('Add a comment') | h}"></div>
+                data-placeholder="댓글 추가"></div>
                 <div class="comment-post-control">
                     <a class="discussion-submit-comment control-button" href="#">${_("Submit")}</a>
                 </div>
@@ -311,7 +312,7 @@
 <script aria-hidden="true" type="text/template" id="discussion-home">
   <div class="discussion-article blank-slate">
     <section class="home-header">
-      <span class="label">${_("DISCUSSION HOME:")}</span>
+      <span class="label">게시판 홈</span>
       % if course and course.display_name_with_default:
         <h1 class="home-title">${course.display_name_with_default}</h1>
       % endif
@@ -319,18 +320,18 @@
 
       % if settings.FEATURES.get('ENABLE_DISCUSSION_HOME_PANEL'):
         <span class="label label-settings">
-          ${_("How to use {platform_name} discussions").format(platform_name=settings.PLATFORM_NAME)}
+         게시판 사용 방법 소개 
         </span>
         <table class="home-helpgrid">
           <tr class="helpgrid-row helpgrid-row-navigation">
-            <td class="row-title">${_("Find discussions")}</td>
+            <td class="row-title">게시물 찾기</td>
             <td class="row-item">
               <i class="icon fa fa-reorder"></i>
               <span class="row-description">${_("Focus in on specific topics")}</span>
             </td>
             <td class="row-item">
               <i class="icon fa fa-search"></i>
-              <span class="row-description">${_("Search for specific posts ")}</span>
+              <span class="row-description">특정 주제 찾기</span>
             </td>
             <td class="row-item">
               <i class="icon fa fa-sort"></i>
@@ -338,14 +339,14 @@
             </td>
           </tr>
           <tr class="helpgrid-row helpgrid-row-participation">
-            <td class="row-title">${_("Engage with posts")}</td>
+            <td class="row-title">게시물에 참여</td>
             <td class="row-item">
               <i class="icon fa fa-plus"></i>
               <span class="row-description">${_("Upvote posts and good responses")}</span>
             </td>
             <td class="row-item">
               <i class="icon fa fa-flag"></i>
-              <span class="row-description">${_("Report Forum Misuse")}</span>
+              <span class="row-description">게시물 신고하기</span>
             </td>
             <td class="row-item">
               <i class="icon fa fa-star"></i>
@@ -353,7 +354,7 @@
             </td>
           </tr>
           <tr class="helpgrid-row helpgrid-row-notification">
-            <td class="row-title">${_('Receive updates')}</td>
+            <td class="row-title">업데이트 받기</td>
             <td class="row-item-full" colspan="3">
               <label for="email-setting-checkbox">
                 <span class="sr">${_("Toggle Notifications Setting")}</span>
@@ -387,18 +388,18 @@
         <ul class="post-errors" style="display: none"></ul>
         <div class="forum-new-post-form-wrapper"></div>
         ${'<% if (cohort_options) { %>'}
-        <div class="post-field">
+        <div class="post-field group-selector-wrapper${'<% if (!is_commentable_cohorted) { %>'} disabled${'<% } %>'}" >
             <label class="field-label">
                 <span class="field-label-text">
                     ## Translators: This labels the selector for which group of students can view a post
                     ${_("Visible To:")}
-                </span><select class="field-input js-group-select" name="group_id" ${'<% if (!is_commentable_cohorted) { %>'}disabled${'<% } %>'}>
+                </span><select aria-describedby="field_help_visible_to" class="field-input js-group-select" name="group_id" ${'<% if (!is_commentable_cohorted) { %>'}disabled${'<% } %>'}>
                     <option value="">${_("All Groups")}</option>
                     ${'<% _.each(cohort_options, function(opt) { %>'}
                     <option value="${'<%= opt.value %>'}" ${'<% if (opt.selected) { %>selected<% } %>'}>${'<%- opt.text %>'}</option>
                     ${'<% }); %>'}
                  </select>
-            </label><div class="field-help">
+            </label><div class="field-help" id="field_help_visible_to">
                 ${_("Discussion admins, moderators, and TAs can make their posts visible to all students or specify a single cohort.")}
             </div>
         </div>
@@ -406,8 +407,8 @@
         <div class="post-field">
             <label class="field-label">
                 <span class="sr">${_("Title:")}</span>
-                <input type="text" class="field-input js-post-title" name="title" placeholder="${_('Title')}">
-            </label><span class="field-help">
+                <input aria-describedby="field_help_title" type="text" class="field-input js-post-title" name="title" placeholder="${_('Title')}">
+            </label><span class="field-help" id="field_help_title">
                 ${_("Add a clear and descriptive title to encourage participation.")}
             </span>
         </div>
@@ -415,23 +416,23 @@
         <div class="post-options">
             <label class="post-option is-enabled">
                 <input type="checkbox" name="follow" class="post-option-input js-follow" checked>
-                <i class="icon fa fa-star"></i>${_("follow this post")}
+                <i class="icon fa fa-star"></i>관심글 등록
             </label>
             ${'<% if (allow_anonymous) { %>'}
             <label class="post-option">
                 <input type="checkbox" name="anonymous" class="post-option-input js-anon">
-                ${_("post anonymously")}
+                익명으로 게시
             </label>
             ${'<% } %>'}
             ${'<% if (allow_anonymous_to_peers) { %>'}
             <label class="post-option">
                 <input type="checkbox" name="anonymous_to_peers" class="post-option-input js-anon-peers">
-                ${_("post anonymously to classmates")}
+                수강생들에게 익명으로 게시
             </label>
             ${'<% } %>'}
         </div>
         <div>
-            <input type="submit" class="submit" value="${_('Add Post')}">
+            <input type="submit" class="submit" value="글쓰기">
             <a href="#" class="cancel">${_('Cancel')}</a>
         </div>
     </form>
@@ -443,22 +444,22 @@
             <span class="field-label-text">
                 ## Translators: This is the label for a control to
                 ## select a forum post type
-                ${_("Post type:")}
-            </span><fieldset class="field-input">
-                <input type="radio" name="${"<%= form_id %>"}-post-type" class="post-type-input" id="${"<%= form_id %>"}-post-type-question" value="question">
+                작성글 종류 
+            </span><fieldset class="field-input"><legend class="sr">${_("Post type:")}</legend>
+                <input aria-describedby="field_help_post_type" type="radio" name="${"<%= form_id %>"}-post-type" class="post-type-input" id="${"<%= form_id %>"}-post-type-question" value="question">
                 <label for="${"<%= form_id %>"}-post-type-question" class="post-type-label">
                     <i class="icon fa fa-question"></i>
                     ## Translators: This is a forum post type
-                    ${_("Question")}
+                    질문하기
                 </label>
-                <input type="radio" name="${"<%= form_id %>"}-post-type" class="post-type-input" id="${"<%= form_id %>"}-post-type-discussion" value="discussion" checked>
+                <input aria-describedby="field_help_post_type" type="radio" name="${"<%= form_id %>"}-post-type" class="post-type-input" id="${"<%= form_id %>"}-post-type-discussion" value="discussion" checked>
                 <label for="${"<%= form_id %>"}-post-type-discussion" class="post-type-label">
                     <i class="icon fa fa-comments"></i>
                     ## Translators: This is a forum post type
                     ${_("Discussion")}
                 </label>
             </fieldset>
-        </div><span class="field-help">
+        </div><span class="field-help" id="field_help_post_type">
             ${_("Questions raise issues that need answers. Discussions share ideas and start conversations.")}
         </span>
     </div>
@@ -480,7 +481,7 @@
 <script aria-hidden="true" type="text/template" id="topic-template">
     ## Using div here instead of label because we are using a non-native control
     <div class="field-label">
-        <span class="field-label-text">${_("Topic Area:")}</span><div class="field-input post-topic">
+        <span class="field-label-text">주제 종류</span><div class="field-input post-topic">
             <a href="#" class="post-topic-button">
                 <span class="sr">${_("Discussion topics; current selection is: ")}</span>
                 <span class="js-selected-topic"></span>
@@ -489,12 +490,12 @@
             <div class="topic-menu-wrapper">
                 <label class="topic-filter-label">
                     <span class="sr">${_("Filter topics")}</span>
-                    <input type="text" class="topic-filter-input" placeholder="${_('Filter topics')}">
+                    <input aria-describedby="field_help_topic_area" type="text" class="topic-filter-input" placeholder="${_('Filter topics')}">
                 </label>
                 <ul class="topic-menu" role="menu">${'<%= topics_html %>'}</ul>
            </div>
        </div>
-    </div><span class="field-help">
+    </div><span class="field-help" id="field_help_topic_area">
         ${_("Add your post to a relevant topic to help others find it.")}
     </span>
 </script>
@@ -514,9 +515,9 @@
     </script>
 </%def>
 
-${primaryAction("endorse", "ok", _("Endorse"), _("Endorse"), _("Unendorse"))}
-${primaryAction("answer", "ok", _("Mark as Answer"), _("Mark as Answer"), _("Unmark as Answer"))}
-${primaryAction("follow", "star", _("Follow"), _("Follow"), _("Unfollow"))}
+${primaryAction("endorse", "check", _("Endorse"), _("Endorse"), _("Unendorse"))}
+${primaryAction("answer", "check", _("Mark as Answer"), _("Mark as Answer"), _("Unmark as Answer"))}
+${primaryAction("follow", "star", _("Follow"), _("Follow"), _(u"Unfollow"))}
 
 <script type="text/template" id="forum-action-vote">
     <li class="actions-item">
@@ -525,7 +526,7 @@ ${primaryAction("follow", "star", _("Follow"), _("Follow"), _("Unfollow"))}
         </span>
         <a href="#" class="action-button action-vote" role="checkbox" aria-checked="false">
             ## Vote counts are populated by JS
-            <span class="sr">${_("Vote")}</span>
+            <span class="sr">${_("Vote for this post,")}&nbsp;</span>
             <span class="sr js-sr-vote-count"></span>
 
             <span class="action-label" aria-hidden="true">
@@ -571,7 +572,7 @@ ${secondaryStateAction("close", "lock", _("Close"), _("Close"), _("Open"))}
     </script>
 </%def>
 
-${secondaryAction("edit", "pencil-square-o", _("Edit"))}
+${secondaryAction("edit", "pencil", _("Edit"))}
 ${secondaryAction("delete", "remove", _("Delete"))}
 
 <script type="text/template" id="forum-actions">
@@ -580,7 +581,7 @@ ${secondaryAction("delete", "remove", _("Delete"))}
         <li class="actions-item is-visible">
             <div class="more-wrapper">
                 <a href="javascript:void(0)" class="action-button action-more" role="button" aria-haspopup="true" aria-controls="action-menu-${"<%= contentId %>"}">
-                    <span class="action-label">${_("More")}</span>
+                    <span class="action-label">더보기</span>
                     <span class="action-icon"><i class="icon fa fa-ellipsis-h"></i></span>
                 </a>
                 <div class="actions-dropdown" id="action-menu-${"<%= contentType %>"}" aria-expanded="false">
@@ -605,3 +606,4 @@ ${secondaryAction("delete", "remove", _("Delete"))}
     ${_('anonymous') | h}
     ${"<% } %>"}
 </script>
+

@@ -14,7 +14,7 @@ html, body {
 }
 
 html{
-  background: white;
+  background: $body-bg;
 }
 
 body {
@@ -22,24 +22,22 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: $base-font-color;
-  font: normal 1.2em/1.2em $serif;
+  color: $gray-d4;
+  font: 600 1.2em/1.2em $sans-serif;
   margin: 0;
 }
 
 h1 {
   color: $base-font-color;
-  font: normal 2em/1.4em $sans-serif;
-  letter-spacing: 1px;
+  font: 600 2em/1.4em $sans-serif;
   margin-bottom: ($baseline*1.5);
   text-align: center;
   //text-transform: uppercase;
 }
 
 h2 {
-  color: $lighter-base-font-color;
-  font: normal 1.2em/1.2em $serif;
-  letter-spacing: 1px;
+  color: $base-font-color;
+  font: 600 1.250em/1.2em $sans-serif;
   margin-bottom: ($baseline*0.75);
   text-transform: uppercase;
   -webkit-font-smoothing: antialiased;
@@ -51,12 +49,12 @@ p + h2, ul + h2, ol + h2 {
 
 p {
   color: $base-font-color;
-  font: normal 1em/1.6em $serif;
+  font: normal 1em/1.6em $sans-serif;
   margin: 0;
 }
 
 span {
-  font: normal 1em/1.6em $sans-serif;
+  font: inherit 1em/1.6em $sans-serif;
   color: $base-font-color;
 }
 
@@ -81,25 +79,27 @@ p + p, ul + p, ol + p {
 p {
   a:link, a:visited {
     color: $link-color;
-    font: normal 1em/1em $serif;
+    font: normal 1em/1em $sans-serif;
     text-decoration: none;
     @include transition(all 0.1s linear 0s);
 
     &:hover, &:focus {
       color: $link-color;
-      text-decoration: underline;
+      text-decoration: none;
     }
   }
 }
 
 a:link, a:visited {
   color: $link-color;
-  font: normal 1em/1em $sans-serif;
+  font: inherit 1em/1em $sans-serif;
   text-decoration: none;
+  /**
   @include transition(all 0.1s linear 0s);
+  **/
 
   &:hover, &:focus {
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   &:disabled, &.is-disabled, &.disabled {
@@ -122,15 +122,19 @@ a:focus {
   margin: 0 auto;
   background: $content-wrapper-bg;
   padding-bottom: ($baseline*2);
+
+  @media print {
+    padding-bottom: 0;
+  }
 }
 
 .container {
   @include clearfix();
   @include box-sizing(border-box);
   margin: 0 auto 0;
-  padding: 0 ($baseline*1.5);
+  padding: ($baseline*2) 10px;
   max-width: grid-width(12);
-  min-width: 760px;
+/**  min-width: 760px;**/
   width: flex-grid(12);
 }
 
@@ -156,7 +160,7 @@ span.edx {
 
     li {
       color: $base-font-color;
-      font: normal 1em/1.4em $serif;
+      font: normal 1em/1.4em $sans-serif;
       margin: 0;
     }
   }
@@ -216,7 +220,7 @@ mark {
   .inner-wrapper {
     margin: auto;
     max-width: 1180px;
-    min-width: 760px;
+   /** min-width: 760px;**/
   }
 
   p {
@@ -238,7 +242,7 @@ mark {
   text-align: center;
 
   strong {
-    font-weight: 700;
+    font-weight: 600;
   }
 }
 
@@ -246,6 +250,7 @@ mark {
   @include transform(rotate(-90deg));
   @include transform-origin(0 0);
   @extend %ui-depth2;
+  @extend %ui-print-excluded;
   top: 250px;
   left: 0;
   position: fixed;
@@ -337,6 +342,8 @@ mark {
 
 // UI - skipnav
 .nav-skip {
+  @extend %ui-print-excluded;
+
   display: block;
   position: absolute;
   left: 0;
